@@ -1,0 +1,22 @@
+#ifndef _ENEMY_H_
+#define _ENEMY_H_
+
+#include "utils.h"
+
+typedef struct Renderer Renderer;
+typedef struct Game Game;
+
+typedef enum EnemyType {
+    Enemy_Weak, Enemy_Strong
+} EnemyType;
+
+typedef struct Enemy {
+    Hp hp;
+    EnemyType type;
+} Enemy;
+
+void RenderEnemies(const Renderer* renderer, Game* game);
+void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int begin_y, int is_focused);
+void GenerateEnemies(Enemy gameEnemies[2]);
+
+#endif
