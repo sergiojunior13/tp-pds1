@@ -90,6 +90,8 @@ Game InitGame() {
 void useCard(Game* game) {
     game->keyboard_keys[ALLEGRO_KEY_ENTER] |= GAME_KEY_SEEN; // Set that already processed this key
 
+    Card selected_card;
+
 
     if (game->focused_entity.type == Card_Entity) {
         Card focused_card = game->hand[game->focused_entity.index];
@@ -112,23 +114,25 @@ void useCard(Game* game) {
             return;
         }
 
-        Enemy* selected_enemy_ptr = &game->enemies[game->focused_entity.index];
-        Card selected_card = game->hand[game->selected_card_index];
-
         if (selected_card.cost > game->player.energy) {
             // TODO: display this msg into screen
             printf("Não possui energia suficiente!\n");
             return;
         }
 
+        Enemy* selected_enemy_ptr = &game->enemies[game->focused_entity.index];
+
+        selected_card = game->hand[game->selected_card_index];
+
         selected_enemy_ptr->hp.crr -= selected_card.effect;
         if (selected_enemy_ptr->hp.crr < 0) selected_enemy_ptr->hp.crr = 0; // Deal the card damage to enemy
 
         game->player.energy -= selected_card.cost;
 
+        removeCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
+
         game->selected_card_index = -1; // Unselect the card
 
-        removeCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
 
     }
 }
