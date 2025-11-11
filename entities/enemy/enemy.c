@@ -11,11 +11,12 @@
 void RenderEnemies(const Renderer* renderer, Game* game) {
     int begin_x = DISPLAY_BUFFER_WIDTH - CREATURE_DISTANCE_TO_WINDOW_CORNER - ENEMY_RADIUS;
 
-    int is_some_enemy_focused = game->focused_element.type == Enemy_Element;
-    int focused_enemy_index = is_some_enemy_focused ? game->focused_element.index : -1;
+    int is_some_enemy_focused = game->focused_entity.type == Enemy_Entity;
+    int focused_enemy_index = is_some_enemy_focused ? game->focused_entity.index : -1;
 
-    RenderEnemy(renderer, &game->enemies[0], begin_x - 140, ENEMY_BEGIN_Y, focused_enemy_index == 0);
-    RenderEnemy(renderer, &game->enemies[1], begin_x, ENEMY_BEGIN_Y, focused_enemy_index == 1);
+    for (int i = 0; i < game->enemies_size; i++) {
+        RenderEnemy(renderer, &game->enemies[i], begin_x - 140 * (1 - i), ENEMY_BEGIN_Y, focused_enemy_index == i);
+    }
 }
 
 void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int begin_y, int is_focused) {
@@ -43,7 +44,7 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 }
 
 void GenerateEnemies(Enemy gameEnemies[2]) {
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
         // Chance of getting '1' is 5%, the chance of appear a strong enemy
         gameEnemies[i].type = GenRandomNum(1, 20) == 1 ? Enemy_Strong : Enemy_Weak;
         gameEnemies[i].hp.max = gameEnemies[i].hp.crr =

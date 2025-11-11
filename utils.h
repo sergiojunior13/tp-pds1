@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+typedef struct Card Card;
+
 typedef struct Hp {
     int crr;
     int max;
@@ -17,5 +19,7 @@ void ClearKeyboardKeys(unsigned char* keyboard_keys);
 int GenRandomNum(int start, int end);
 
 void ShuffleArray(int* array, int size);
+
+void ShuffleCards(Card* array, int size);
 
 #endif

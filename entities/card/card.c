@@ -9,7 +9,7 @@
 
 int focused_card_index = -1;
 
-void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_top, int is_focused) {
+void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_top, int is_focused, int is_selected) {
     if (is_focused) y_top -= 40;
 
     Imgs_Ids card_img_id;
@@ -25,6 +25,9 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
         card_img_id = Card_Spe_Img_Id;
         break;
     }
+
+    if (is_selected)
+        al_draw_filled_rounded_rectangle(x_left + 3, y_top + 2, x_left + CARD_WIDTH + 3, y_top + CARD_HEIGHT + 4, 10, 10, al_map_rgb(255, 255, 255));
 
     float scale = RenderImage(card_img_id, x_left, y_top, CARD_WIDTH);
 
@@ -52,11 +55,11 @@ void RenderPlayerHand(Renderer* renderer, Game* game) {
     float start_x = (DISPLAY_BUFFER_WIDTH / 2.0) - (CARD_X_OFFSET * 4 + CARD_WIDTH) / 2.0;
     float y = DISPLAY_BUFFER_HEIGHT - HAND_Y_DISTANCE_TO_BOTTOM - CARD_HEIGHT;
 
-    int is_some_card_focused = game->focused_element.type == Card_Element;
-    int focused_card_index = is_some_card_focused ? game->focused_element.index : -1;
+    int is_some_card_focused = game->focused_entity.type == Card_Entity;
+    int focused_card_index = is_some_card_focused ? game->focused_entity.index : -1;
 
-    for (int i = 0; i < 5; i++) {
-        RenderCard(renderer, &game->hand[i], start_x + i * CARD_X_OFFSET, y, focused_card_index == i);
+    for (int i = 0; i < game->hand_size; i++) {
+        RenderCard(renderer, &game->hand[i], start_x + i * CARD_X_OFFSET, y, focused_card_index == i, game->selected_card_index == i);
     }
 }
 

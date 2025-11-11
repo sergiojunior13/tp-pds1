@@ -2,6 +2,7 @@
 
 #include <allegro5/allegro5.h>
 #include <stdio.h>
+#include "entities/card/card.h"
 
 void must_init(_Bool test, const char* description) {
   if (test) return;
@@ -47,6 +48,23 @@ void ShuffleArray(int* array, int size) {
       array[j] = array[i];
 
       array[i] = int_j;
+    }
+  }
+}
+
+void ShuffleCards(Card* array, int size) {
+  if (size > 1) {
+    int i;
+    for (i = 0; i < size - 1; i++) {
+      int j = i + rand() / (RAND_MAX / (size - i) + 1);
+      if (j == i) {
+        continue;
+      }
+      Card card_j = array[j];
+
+      array[j] = array[i];
+
+      array[i] = card_j;
     }
   }
 }

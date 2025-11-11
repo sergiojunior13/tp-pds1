@@ -16,7 +16,7 @@ typedef struct Card {
     int effect;
 } Card;
 
-void RenderCard(const Renderer* renderer, const Card* card, int x, int y, int is_focused);
+void RenderCard(const Renderer* renderer, const Card* card, int x, int y, int is_focused, int is_selected);
 
 void RenderPlayerHand(Renderer* renderer, Game* game);
 

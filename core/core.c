@@ -3,14 +3,17 @@
 #include "entities/enemy/enemy.h"
 #include "entities/card/card.h"
 #include "constants.h"
+#include <stdio.h>
 
-void removeCardFromArray(Card array[], int size, int element_index) {
-    for (int i = element_index; i < size - 1; i++) {
+void removeCardFromArray(Card array[], int* size_ptr, int element_index) {
+    for (int i = element_index; i < (*size_ptr) - 1; i++) {
         array[i] = array[i + 1];
     }
+
+    (*size_ptr)--;
 }
 
-void GenerateDeck(Card gameDeck[]) {
+void GenerateDeck(Card game_deck[]) {
     // Attack cards
     for (int i = 0; i < 10; i++) {
         Card card;
@@ -20,7 +23,7 @@ void GenerateDeck(Card gameDeck[]) {
         else if (i <= 5) card = GenerateCard(Card_Type_Attack, 1); // At least 3 cards of cost 1
         else card = GenerateCard(Card_Type_Attack, GenRandomNum(0, 3)); // Gen the last 4 atk cards randomly
 
-        gameDeck[i] = card;
+        game_deck[i] = card;
     }
 
     // Defense cards
@@ -32,21 +35,27 @@ void GenerateDeck(Card gameDeck[]) {
         else if (i <= 15) card = GenerateCard(Card_Type_Defense, 1); // At least 3 cards of cost 1
         else card = GenerateCard(Card_Type_Defense, GenRandomNum(0, 3)); // Gen the last 4 def cards randomly
 
-        gameDeck[i] = card;
+        game_deck[i] = card;
     }
 
     // Special cards
     for (int i = 18; i < 20; i++) {
-        gameDeck[i] = GenerateCard(Card_Type_Special, 0);
+        game_deck[i] = GenerateCard(Card_Type_Special, 0);
     }
 }
 
-void GenerateHand(Card gameHand[], Card gameDeck[]) {
-    for (int i = 0; i < 5;i++) {
-        int random_index = GenRandomNum(0, 19 - i);
+void GenerateBuyStack(Card buy_deck[], Card game_deck[]) {
+    memcpy(buy_deck, game_deck, 20 * sizeof(Card));
 
-        gameHand[i] = gameDeck[random_index];
-        removeCardFromArray(gameDeck, 20 - i, random_index);
+    ShuffleCards(buy_deck, 20);
+}
+
+void GenerateHand(Card game_hand[], Card buy_deck[], int* buy_deck_size_ptr) {
+    for (int i = 0; i < 10; i++) {
+        int random_index = GenRandomNum(0, (*buy_deck_size_ptr) - 1);
+
+        game_hand[i] = buy_deck[random_index];
+        removeCardFromArray(buy_deck, buy_deck_size_ptr, random_index);
     }
 }
 
@@ -57,18 +66,74 @@ Game InitGame() {
     game.player.hp = (Hp){ 100, 100 };
 
     GenerateEnemies(game.enemies);
+
+    game.enemies_size = 2;
+
+    game.buy_size = 20;
+    game.hand_size = 5;
+    game.discard_size = 0;
+
     GenerateDeck(game.deck);
-    GenerateHand(game.hand, game.deck);
+    GenerateBuyStack(game.buy, game.deck);
+    GenerateHand(game.hand, game.buy, &game.buy_size);
 
     game.phase = 0;
 
-    game.focused_element.index = -1;
-    game.focused_element.type = -1;
+    game.focused_entity.index = -1;
+    game.focused_entity.type = -1;
+    game.selected_card_index = -1;
+    game.selected_enemy_index = -1;
 
     return game;
 }
 
-void checkArrowsKeys(Game* game) {
+void useCard(Game* game) {
+    game->keyboard_keys[ALLEGRO_KEY_ENTER] |= GAME_KEY_SEEN; // Set that already processed this key
+
+
+    if (game->focused_entity.type == Card_Entity) {
+        Card focused_card = game->hand[game->focused_entity.index];
+
+        game->selected_card_index = game->focused_entity.index;
+
+        switch (focused_card.type) {
+        case Card_Type_Defense:
+            // TODO: apply defense effect into player
+            break;
+        case Card_Type_Special:
+            // TODO: apply special card effect
+            break;
+        }
+    }
+    else if (game->focused_entity.type == Enemy_Entity) {
+        if (game->selected_card_index == -1) {
+            // TODO: display this msg into screen
+            printf("Selecione uma carta primeiro!\n");
+            return;
+        }
+
+        Enemy* selected_enemy_ptr = &game->enemies[game->focused_entity.index];
+        Card selected_card = game->hand[game->selected_card_index];
+
+        if (selected_card.cost > game->player.energy) {
+            // TODO: display this msg into screen
+            printf("Não possui energia suficiente!\n");
+            return;
+        }
+
+        selected_enemy_ptr->hp.crr -= selected_card.effect;
+        if (selected_enemy_ptr->hp.crr < 0) selected_enemy_ptr->hp.crr = 0; // Deal the card damage to enemy
+
+        game->player.energy -= selected_card.cost;
+
+        game->selected_card_index = -1; // Unselect the card
+
+        removeCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
+
+    }
+}
+
+void CheckArrowsKeys(Game* game) {
     // Check if the keys were pressed (GAME_KEY_DOWN) and weren't processed (GAME_KEY_SEEN)
     int left_key_was_pressed = (game->keyboard_keys[ALLEGRO_KEY_LEFT] & GAME_KEY_DOWN) &&
         !(game->keyboard_keys[ALLEGRO_KEY_LEFT] & GAME_KEY_SEEN);
@@ -77,26 +142,26 @@ void checkArrowsKeys(Game* game) {
         !(game->keyboard_keys[ALLEGRO_KEY_RIGHT] & GAME_KEY_SEEN);
 
     if (right_key_was_pressed) {
-        game->focused_element.index++;
+        game->focused_entity.index++;
 
-        switch (game->focused_element.type) {
-        case Card_Element:
-            if (game->focused_element.index > 4) {
+        switch (game->focused_entity.type) {
+        case Card_Entity:
+            if (game->focused_entity.index > game->hand_size - 1) {
                 // Focus into enemies
-                game->focused_element.type = Enemy_Element;
-                game->focused_element.index = 0;
+                game->focused_entity.type = Enemy_Entity;
+                game->focused_entity.index = 0;
             }
             break;
-        case Enemy_Element:
-            if (game->focused_element.index > 1) {
+        case Enemy_Entity:
+            if (game->focused_entity.index > game->enemies_size - 1) {
                 // Focus into nothing
-                game->focused_element.type = -1;
+                game->focused_entity.type = -1;
             }
             break;
         default:
             // If is focused in nothing
-            game->focused_element.type = Card_Element;
-            game->focused_element.index = 0;
+            game->focused_entity.type = Card_Entity;
+            game->focused_entity.index = 0;
             break;
         };
 
@@ -105,26 +170,26 @@ void checkArrowsKeys(Game* game) {
     }
 
     else if (left_key_was_pressed) {
-        game->focused_element.index--;
+        game->focused_entity.index--;
 
-        switch (game->focused_element.type) {
-        case Card_Element:
-            if (game->focused_element.index < 0) {
+        switch (game->focused_entity.type) {
+        case Card_Entity:
+            if (game->focused_entity.index < 0) {
                 // Focus into nothing
-                game->focused_element.type = -1;
+                game->focused_entity.type = -1;
             }
             break;
-        case Enemy_Element:
-            if (game->focused_element.index < 0) {
+        case Enemy_Entity:
+            if (game->focused_entity.index < 0) {
                 // Focus into cards
-                game->focused_element.type = Card_Element;
-                game->focused_element.index = 4;
+                game->focused_entity.type = Card_Entity;
+                game->focused_entity.index = game->hand_size - 1;
             }
             break;
         default:
-            // If is focused in nothing
-            game->focused_element.type = Enemy_Element;
-            game->focused_element.index = 1;
+            // If is focused in nothing, focus into enemies
+            game->focused_entity.type = Enemy_Entity;
+            game->focused_entity.index = game->enemies_size - 1;
 
             break;
         };
@@ -134,20 +199,27 @@ void checkArrowsKeys(Game* game) {
     }
 }
 
-void checkKeys(Game* game) {
-    checkArrowsKeys(game);
+void CheckKeys(Game* game) {
+    CheckArrowsKeys(game);
 
+    // Debug instant damage
     if (game->keyboard_keys[ALLEGRO_KEY_X] & GAME_KEY_DOWN) {
         if (game->player.hp.crr > 1) game->player.hp.crr = 1;
     }
 
     if (game->keyboard_keys[ALLEGRO_KEY_SPACE] & GAME_KEY_DOWN) {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < game->enemies_size; i++) {
             game->enemies[i].hp.crr = 0;
         }
     }
+
+    // If pressed the ENTER key and if still it wasn't processed
+    if (!(game->keyboard_keys[ALLEGRO_KEY_ENTER] & GAME_KEY_SEEN) && (game->keyboard_keys[ALLEGRO_KEY_ENTER] & GAME_KEY_DOWN)) {
+        useCard(game);
+    }
+
 }
 
 void AdvanceGame(Renderer* renderer, Game* game) {
-    checkKeys(game);
+    CheckKeys(game);
 }

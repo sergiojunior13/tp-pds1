@@ -7,25 +7,34 @@
 
 typedef struct Renderer Renderer;
 
-typedef enum { Card_Element, Enemy_Element } Element_Type;
+typedef enum { Card_Entity, Enemy_Entity } Entity_Type;
 
-typedef struct FocusedElement {
-    Element_Type type;
+typedef struct Entity {
+    Entity_Type type;
     int index;
-} FocusedElement;
-
+} Entity;
 
 typedef struct Game {
+    int phase;
+
     Player player;
     Enemy enemies[2];
 
-    int phase;
+    int enemies_size;
 
     Card deck[20];
     Card hand[5];
     Card discard[20];
+    Card buy[20];
 
-    FocusedElement focused_element;
+    int buy_size;
+    int discard_size;
+    int hand_size;
+
+    int selected_card_index;
+    int selected_enemy_index;
+
+    Entity focused_entity;
 
     unsigned char keyboard_keys[ALLEGRO_KEY_MAX];
 } Game;
