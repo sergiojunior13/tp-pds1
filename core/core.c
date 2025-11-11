@@ -134,6 +134,20 @@ void checkArrowsKeys(Game* game) {
     }
 }
 
-void AdvanceGame(Renderer* renderer, Game* game) {
+void checkKeys(Game* game) {
     checkArrowsKeys(game);
+
+    if (game->keyboard_keys[ALLEGRO_KEY_X] & GAME_KEY_DOWN) {
+        if (game->player.hp.crr > 1) game->player.hp.crr = 1;
+    }
+
+    if (game->keyboard_keys[ALLEGRO_KEY_SPACE] & GAME_KEY_DOWN) {
+        for (int i = 0; i < 2; i++) {
+            game->enemies[i].hp.crr = 0;
+        }
+    }
+}
+
+void AdvanceGame(Renderer* renderer, Game* game) {
+    checkKeys(game);
 }

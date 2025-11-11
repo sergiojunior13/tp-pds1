@@ -19,6 +19,8 @@ void RenderEnemies(const Renderer* renderer, Game* game) {
 }
 
 void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int begin_y, int is_focused) {
+    if (enemy->hp.crr == 0) return;
+
     if (is_focused) begin_y -= 40;
 
     int width = ENEMY_RADIUS;
@@ -33,13 +35,11 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 
     float health_bar_begin_y = begin_y + width + 10;
 
-    Hp hp = { 80, 100 };
-
     RenderHealthBar(&enemy->hp, begin_x, x_end, health_bar_begin_y, renderer->font);
 
     float img_y = health_bar_begin_y + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING * 2 + 5;
-    RenderImage(Shield_Img_Id, center_x, img_y, 1);
-    DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), center_x - 35, img_y + 7, 2.0, 2.0, ALLEGRO_ALIGN_LEFT, "+4");
+    RenderImage(Shield_Img_Id, center_x, img_y, 32);
+    DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), center_x - 15, img_y + 7, 2.0, 2.0, ALLEGRO_ALIGN_LEFT, "4");
 }
 
 void GenerateEnemies(Enemy gameEnemies[2]) {
