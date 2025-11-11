@@ -33,15 +33,13 @@
 
 /*  ------ Card ------ */
 
-#define HAND_Y_DISTANCE_TO_BOTTOM 0
+#define HAND_Y_DISTANCE_TO_BOTTOM 10
 #define CARD_FOCUSED_Y_DISTANCE_TO_BOTTOM 20
 
-#define CARD_WIDTH 165
-#define CARD_HEIGHT 220
+#define CARD_WIDTH 140
+#define CARD_HEIGHT CARD_WIDTH*4/2.88
 
-#define CARD_X_OFFSET 175
-
-#define CARD_BORDER_PADDING 4
+#define CARD_X_OFFSET 150
 
 /*  ------ Deck ------ */
 

@@ -15,9 +15,27 @@
 #include "entities/enemy/enemy.h"
 #include "entities/card/card.h"
 
+void DrawMultilineScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y, float max_width,
+  float x_scale, float y_scale, int alignment, const char* text) {
+  ALLEGRO_TRANSFORM transform;
+  al_identity_transform(&transform);  // Start with an identity transform
+  al_scale_transform(&transform, x_scale, y_scale);  // Apply scaling (e.g., sx=2.0, sy=2.0 for double size)
+  al_use_transform(&transform);  // Use the transform for subsequent drawing
+
+  // Adjust x, y to the scale 
+  x /= x_scale;
+  y /= y_scale;
+
+  // al_draw_multiline_text(font, color, x, y, 150, DEFAULT_LINE_HEIGHT, alignment, text);
+  al_draw_multiline_text(font, color, x, y, max_width, DEFAULT_LINE_HEIGHT, alignment, text);
+
+  // Reset the transform
+  al_identity_transform(&transform);
+  al_use_transform(&transform);
+}
+
 void DrawScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y,
-  float x_scale, float y_scale, int alignment,
-  const char* text) {
+  float x_scale, float y_scale, int alignment, const char* text) {
   ALLEGRO_TRANSFORM transform;
   al_identity_transform(&transform);  // Start with an identity transform
   al_scale_transform(&transform, x_scale, y_scale);  // Apply scaling (e.g., sx=2.0, sy=2.0 for double size)
@@ -107,16 +125,20 @@ void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
   float text_begin_y = y_begin + HEALTH_BAR_PADDING + (HEALTH_BAR_HEIGHT - DEFAULT_LINE_HEIGHT) / 2.0;
 
   DrawScaledText(font, al_map_rgb(0, 0, 0), center_x,
-    text_begin_y, x_scale, y_scale, ALLEGRO_ALIGN_CENTRE, text);
+    text_begin_y, x_scale, y_scale, ALLEGRO_ALIGN_CENTER, text);
 }
 
 void RenderEnergy(Renderer* renderer) {}
 
-void RenderImage(Imgs_Ids img_id, float x, float y, float scale) {
+float RenderImage(Imgs_Ids img_id, float x, float y, float width) {
   float img_w = al_get_bitmap_width(imgs_bitmaps[img_id]);
   float img_h = al_get_bitmap_height(imgs_bitmaps[img_id]);
 
+  float scale = width / img_w;
+
   al_draw_scaled_bitmap(imgs_bitmaps[img_id], 0, 0, img_w, img_h, x, y, img_w * scale, img_h * scale, 0);
+
+  return scale;
 }
 
 void Render(Renderer* renderer, Game* game) {

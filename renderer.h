@@ -22,13 +22,15 @@ void Render(Renderer* renderer, Game* game);
 
 void ClearRenderer(Renderer* renderer);
 
+void DrawMultilineScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y, float max_width,
+  float x_scale, float y_scale, int alignment, const char* text);
+
 void DrawScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y,
-  float x_scale, float y_scale, int alignment,
-  const char* text);
+  float x_scale, float y_scale, int alignment, const char* text);
 
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
   ALLEGRO_FONT* font);
 
-void RenderImage(Imgs_Ids img_id, float x, float y, float scale);
+float RenderImage(Imgs_Ids img_id, float x, float y, float width);
 
 #endif

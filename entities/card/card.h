@@ -4,13 +4,13 @@
 typedef struct Renderer Renderer;
 typedef struct Game Game;
 
-typedef enum {
+typedef enum CardType {
     Card_Type_Attack,
     Card_Type_Defense,
     Card_Type_Special,
 } CardType;
 
-typedef struct {
+typedef struct Card {
     CardType type;
     int cost;
     int effect;
