@@ -8,6 +8,8 @@ typedef enum Imgs_Ids {
     Card_Atk_Img_Id,
     Card_Def_Img_Id,
     Card_Spe_Img_Id,
+    Buy_Stack_Img_Id,
+    Discard_Stack_Img_Id,
     Normal_Bg_Img_Id,
     End_Bg_Img_Id,
     Total_Images

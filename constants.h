@@ -41,13 +41,13 @@
 
 #define CARD_X_OFFSET 150
 
-/*  ------ Deck ------ */
+/*  ------ Decks (Buy/Discard) ------ */
 
-#define DRAW_DECK_X 15
-#define DRAW_DECK_Y 250
+#define DRAW_DECK_DISTANCE_X_TO_BORDER 30
+#define DRAW_DECK_DISTANCE_Y_TO_BORDER 10
 
-#define DECK_WIDTH 80
-#define DECK_HEIGHT 80
+#define DECK_WIDTH 140
+#define DECK_HEIGHT DECK_WIDTH*274/300
 
 // You might want to use this.
 typedef enum {

@@ -52,7 +52,7 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
 }
 
 void RenderPlayerHand(Renderer* renderer, Game* game) {
-    float start_x = (DISPLAY_BUFFER_WIDTH / 2.0) - (CARD_X_OFFSET * 4 + CARD_WIDTH) / 2.0;
+    float start_x = (DISPLAY_BUFFER_WIDTH / 2.0) - (CARD_X_OFFSET * (game->hand_size - 1) + CARD_WIDTH) / 2.0;
     float y = DISPLAY_BUFFER_HEIGHT - HAND_Y_DISTANCE_TO_BOTTOM - CARD_HEIGHT;
 
     int is_some_card_focused = game->focused_entity.type == Card_Entity;

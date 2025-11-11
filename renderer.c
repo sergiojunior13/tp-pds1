@@ -84,19 +84,36 @@ void RenderBackground(Game* game) {
     0);
 }
 
-void RenderDeck(Renderer* renderer, int x_left, int y_top) {
-  ALLEGRO_BITMAP* prev_bmp_target = al_get_target_bitmap();
+void RenderBuyDeck(Renderer* renderer, Game* game) {
+  float x = DRAW_DECK_DISTANCE_X_TO_BORDER;
+  float y = DISPLAY_HEIGHT - DRAW_DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
 
-  ALLEGRO_BITMAP* deck_bitmap = al_create_bitmap(DECK_WIDTH, DECK_HEIGHT);
-  al_set_target_bitmap(deck_bitmap);
+  RenderImage(Buy_Stack_Img_Id, x, y, DECK_WIDTH);
 
-  al_draw_filled_rounded_rectangle(0, 0, DECK_WIDTH, DECK_HEIGHT, 10, 0,
-    al_map_rgb(255, 255, 255));
-  al_set_target_bitmap(prev_bmp_target);
+  char n_buy_cards_text[2];
+  sprintf(n_buy_cards_text, "%d", game->buy_size);
 
-  al_draw_scaled_bitmap(deck_bitmap, 0, 0, DECK_WIDTH, DECK_HEIGHT, x_left,
-    y_top, DECK_WIDTH, DECK_HEIGHT, 0);
-  al_destroy_bitmap(deck_bitmap);
+  float text_scale = 2.6;
+  float text_x = x + DECK_WIDTH - 33;
+  float text_y = y + DECK_HEIGHT - 42;
+
+  DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), text_x, text_y, text_scale, text_scale, ALLEGRO_ALIGN_CENTER, n_buy_cards_text);
+}
+
+void RenderDiscardDeck(Renderer* renderer, Game* game) {
+  float x = DISPLAY_WIDTH - DRAW_DECK_DISTANCE_X_TO_BORDER - DECK_WIDTH;
+  float y = DISPLAY_HEIGHT - DRAW_DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
+
+  RenderImage(Discard_Stack_Img_Id, x, y, DECK_WIDTH);
+
+  char n_discard_cards_text[2];
+  sprintf(n_discard_cards_text, "%d", game->discard_size);
+
+  float text_scale = 2.6;
+  float text_x = x + 33;
+  float text_y = y + DECK_HEIGHT - 42;
+
+  DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), text_x, text_y, text_scale, text_scale, ALLEGRO_ALIGN_CENTER, n_discard_cards_text);
 }
 
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
@@ -145,7 +162,8 @@ void Render(Renderer* renderer, Game* game) {
   al_set_target_bitmap(renderer->display_buffer);
 
   RenderBackground(game);
-  RenderDeck(renderer, DRAW_DECK_X, DRAW_DECK_Y);
+  RenderBuyDeck(renderer, game);
+  RenderDiscardDeck(renderer, game);
   RenderEnergy(renderer);
   RenderPlayer(renderer, &game->player);
   RenderEnemies(renderer, game);

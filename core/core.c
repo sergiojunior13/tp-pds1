@@ -5,12 +5,18 @@
 #include "constants.h"
 #include <stdio.h>
 
-void removeCardFromArray(Card array[], int* size_ptr, int element_index) {
+void RemoveCardFromArray(Card array[], int* size_ptr, int element_index) {
     for (int i = element_index; i < (*size_ptr) - 1; i++) {
         array[i] = array[i + 1];
     }
 
     (*size_ptr)--;
+}
+
+void AddCardToArray(Card array[], int* arr_size_ptr, Card card) {
+    array[*arr_size_ptr] = card;
+
+    (*arr_size_ptr)++;
 }
 
 void GenerateDeck(Card game_deck[]) {
@@ -51,11 +57,11 @@ void GenerateBuyStack(Card buy_deck[], Card game_deck[]) {
 }
 
 void GenerateHand(Card game_hand[], Card buy_deck[], int* buy_deck_size_ptr) {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 5; i++) {
         int random_index = GenRandomNum(0, (*buy_deck_size_ptr) - 1);
 
         game_hand[i] = buy_deck[random_index];
-        removeCardFromArray(buy_deck, buy_deck_size_ptr, random_index);
+        RemoveCardFromArray(buy_deck, buy_deck_size_ptr, random_index);
     }
 }
 
@@ -129,7 +135,8 @@ void useCard(Game* game) {
 
         game->player.energy -= selected_card.cost;
 
-        removeCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
+        RemoveCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
+        AddCardToArray(game->discard, &game->discard_size, selected_card);
 
         game->selected_card_index = -1; // Unselect the card
 

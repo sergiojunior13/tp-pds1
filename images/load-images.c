@@ -11,6 +11,8 @@ const char* imgs_src[] = {
     "images/card-attack.png",
     "images/card-defense.png",
     "images/card-special.png",
+    "images/buy-stack.png",
+    "images/discard-stack.png",
     "images/normal-bg.png",
     "images/end-bg.png",
 };
