@@ -43,11 +43,18 @@
 
 /*  ------ Decks (Buy/Discard) ------ */
 
-#define DRAW_DECK_DISTANCE_X_TO_BORDER 30
-#define DRAW_DECK_DISTANCE_Y_TO_BORDER 10
+#define DECK_DISTANCE_X_TO_BORDER 30
+#define DECK_DISTANCE_Y_TO_BORDER 10
 
 #define DECK_WIDTH 140
 #define DECK_HEIGHT DECK_WIDTH*274/300
+
+/*  ------ Energy ------ */
+
+#define ENERGY_X 50
+#define ENERGY_Y 50
+
+#define ENERGY_WIDTH 100
 
 // You might want to use this.
 typedef enum {

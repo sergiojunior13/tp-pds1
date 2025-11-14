@@ -85,8 +85,8 @@ void RenderBackground(Game* game) {
 }
 
 void RenderBuyDeck(Renderer* renderer, Game* game) {
-  float x = DRAW_DECK_DISTANCE_X_TO_BORDER;
-  float y = DISPLAY_HEIGHT - DRAW_DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
+  float x = DECK_DISTANCE_X_TO_BORDER;
+  float y = DISPLAY_HEIGHT - DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
 
   RenderImage(Buy_Stack_Img_Id, x, y, DECK_WIDTH);
 
@@ -101,8 +101,8 @@ void RenderBuyDeck(Renderer* renderer, Game* game) {
 }
 
 void RenderDiscardDeck(Renderer* renderer, Game* game) {
-  float x = DISPLAY_WIDTH - DRAW_DECK_DISTANCE_X_TO_BORDER - DECK_WIDTH;
-  float y = DISPLAY_HEIGHT - DRAW_DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
+  float x = DISPLAY_WIDTH - DECK_DISTANCE_X_TO_BORDER - DECK_WIDTH;
+  float y = DISPLAY_HEIGHT - DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
 
   RenderImage(Discard_Stack_Img_Id, x, y, DECK_WIDTH);
 
@@ -158,8 +158,20 @@ void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
     text_begin_y, x_scale, y_scale, ALLEGRO_ALIGN_CENTER, text);
 }
 
-void RenderEnergy(Renderer* renderer) {
+void RenderEnergy(Renderer* renderer, Game* game) {
+  RenderImage(Energy_Img_Id, ENERGY_X, ENERGY_Y, ENERGY_WIDTH);
 
+  char energyText[2];
+  sprintf(energyText, "%d", game->player.energy);
+
+  ALLEGRO_COLOR color = al_map_rgb(0, 0, 0);
+
+  float scale = 5.5;
+  float x = ENERGY_X + (ENERGY_WIDTH / 2.0) + 5;
+  float y = ENERGY_Y + (ENERGY_WIDTH / 2.0) - 13;
+
+  // DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), x, y - scale, scale + 1, scale + 1, ALLEGRO_ALIGN_CENTER, energyText);
+  DrawScaledText(renderer->font, color, x, y, scale, scale, ALLEGRO_ALIGN_CENTER, energyText);
 }
 
 float RenderImage(Imgs_Ids img_id, float x, float y, float width) {
@@ -179,7 +191,7 @@ void Render(Renderer* renderer, Game* game) {
   RenderBackground(game);
   RenderBuyDeck(renderer, game);
   RenderDiscardDeck(renderer, game);
-  RenderEnergy(renderer);
+  RenderEnergy(renderer, game);
   RenderPlayer(renderer, &game->player);
   RenderEnemies(renderer, game);
   RenderPlayerHand(renderer, game);
