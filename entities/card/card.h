@@ -10,10 +10,16 @@ typedef enum CardType {
     Card_Type_Special,
 } CardType;
 
+typedef enum SpecialCardEffectType {
+    Special_Card_Heal_Hp,
+    Special_Card_Reduce_Enemies_Life_By_Half,
+} SpecialCardEffectType;
+
 typedef struct Card {
     CardType type;
     int cost;
     int effect;
+    SpecialCardEffectType effect_type; // Prop just for the special card
 } Card;
 
 void RenderCard(const Renderer* renderer, const Card* card, int x, int y, int is_focused, int is_selected);

@@ -45,9 +45,16 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 }
 
 void GenerateEnemies(Enemy gameEnemies[2]) {
-    for (int i = 0; i < 4; i++) {
-        // Chance of getting '1' is 5%, the chance of appear a strong enemy
-        gameEnemies[i].type = GenRandomNum(1, 20) == 1 ? Enemy_Strong : Enemy_Weak;
+    int already_gen_strong_enemy = 0;
+
+    for (int i = 0; i < 2; i++) {
+
+        if (!already_gen_strong_enemy) { // Chance of getting '1' is 5%, the chance of appear a strong enemy
+            gameEnemies[i].type = GenRandomNum(1, 20) == 1 ? Enemy_Strong : Enemy_Weak;
+            already_gen_strong_enemy = 1;
+        }
+        else gameEnemies[i].type = Enemy_Weak;
+
         gameEnemies[i].hp.max = gameEnemies[i].hp.crr =
             gameEnemies[i].type == Enemy_Strong ? GenRandomNum(40, 100) : GenRandomNum(10, 30);
     }

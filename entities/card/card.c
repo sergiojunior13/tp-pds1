@@ -24,6 +24,9 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
     case Card_Type_Special:
         card_img_id = Card_Spe_Img_Id;
         break;
+    default:
+        return;
+        break;
     }
 
     if (is_selected)
@@ -37,18 +40,39 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
     DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), x_left + 19,
         y_top + 9, 1 / scale, 1 / scale, ALLEGRO_ALIGN_CENTER, card_cost_text);
 
+    float effect_text_scale = 1.7;
+
     char card_effect_text[30] = "";
     char attack_format[] = "%d\nAtaque";
     char defense_format[] = "%d\nDefesa";
-    char special_format[] = "%d\nEfeito";
+    char special_hp_format[] = "+%d\nVida";
+    char special_enemies_format[] = "Remova metade da vida dos inimigos";
 
-    char format[40];
-    strcpy(format, (card->type == Card_Type_Attack) ? attack_format : (card->type == Card_Type_Defense ? defense_format : special_format));
+    char format[100];
+
+    switch (card->type) {
+    case Card_Type_Attack:
+        strcpy(format, attack_format);
+        break;
+    case Card_Type_Defense:
+        strcpy(format, defense_format);
+        break;
+    case Card_Type_Special:
+        if (card->effect_type == Special_Card_Heal_Hp)
+            strcpy(format, special_hp_format);
+        else {
+            strcpy(format, special_enemies_format);
+            effect_text_scale = 1.4;
+        }
+        break;
+    default:
+        break;
+    }
 
     sprintf(card_effect_text, format, card->effect);
 
     DrawMultilineScaledText(renderer->font, al_map_rgb(255, 255, 255), x_left + 3 + CARD_WIDTH / 2.0,
-        y_top + CARD_HEIGHT / 2.0 - 2 * DEFAULT_LINE_HEIGHT, CARD_WIDTH - 30, 1.7, 1.7, ALLEGRO_ALIGN_CENTER, card_effect_text);
+        y_top + CARD_HEIGHT / 2.0 - 2 * DEFAULT_LINE_HEIGHT, CARD_WIDTH - 40, effect_text_scale, effect_text_scale, ALLEGRO_ALIGN_CENTER, card_effect_text);
 }
 
 void RenderPlayerHand(Renderer* renderer, Game* game) {
@@ -69,6 +93,8 @@ Card GenerateCard(CardType type, int cost) {
     card.cost = cost;
 
     if (type != Card_Type_Special) {
+        card.effect_type = -1;
+
         switch (cost) {
         case 0:
             card.effect = GenRandomNum(1, 5);
@@ -84,7 +110,18 @@ Card GenerateCard(CardType type, int cost) {
             break;
         }
     }
-    else card.effect = 100;
+    else {
+        card.effect_type = GenRandomNum(Special_Card_Heal_Hp, Special_Card_Reduce_Enemies_Life_By_Half);
+
+        switch (card.effect_type) {
+        case Special_Card_Heal_Hp:
+            card.effect = GenRandomNum(10, 20);
+            break;
+        case Special_Card_Reduce_Enemies_Life_By_Half:
+            card.effect = 2;
+            break;
+        }
+    }
 
     return card;
 }

@@ -4,6 +4,7 @@
 #include "entities/card/card.h"
 #include "constants.h"
 #include <stdio.h>
+#include <string.h>
 
 void RemoveCardFromArray(Card array[], int* size_ptr, int element_index) {
     for (int i = element_index; i < (*size_ptr) - 1; i++) {
@@ -17,6 +18,12 @@ void AddCardToArray(Card array[], int* arr_size_ptr, Card card) {
     array[*arr_size_ptr] = card;
 
     (*arr_size_ptr)++;
+}
+
+void ClearCardArray(Card array[], int* arr_size_ptr) {
+    memset(array, 0, sizeof(Card) * (*arr_size_ptr));
+
+    (*arr_size_ptr) = 0;
 }
 
 void GenerateDeck(Card game_deck[]) {
@@ -122,7 +129,12 @@ void useCard(Game* game) {
             used_card = 1;
             break;
         case Card_Type_Special:
-            // TODO: apply special card effect
+            if (focused_card.effect_type == Special_Card_Heal_Hp)
+                game->player.hp.crr += game->player.hp.crr + focused_card.effect > 100 ? 0 : focused_card.effect;
+            else
+                for (int i = 0; i < game->enemies_size; i++)
+                    game->enemies[i].hp.crr /= 2; // Remove half of enemies life
+
             used_card = 1;
             break;
         }
@@ -150,7 +162,7 @@ void useCard(Game* game) {
         used_card = 1;
 
         selected_enemy_ptr->hp.crr -= selected_card.effect;
-        if (selected_enemy_ptr->hp.crr < 0) selected_enemy_ptr->hp.crr = 0; // Deal the card damage to enemy
+        if (selected_enemy_ptr->hp.crr < 0) selected_enemy_ptr->hp.crr = 0;
 
 
         game->selected_card_index = -1; // Unselect the card
@@ -158,8 +170,17 @@ void useCard(Game* game) {
 
     if (used_card) {
         game->player.energy -= card.cost;
+
         RemoveCardFromArray(game->hand, &game->hand_size, card_index);
         AddCardToArray(game->discard, &game->discard_size, card);
+
+        if (card.type == Card_Type_Special) {
+            for (int i = 0; i < game->hand_size; i++)
+                AddCardToArray(game->discard, &game->discard_size, game->hand[i]);
+
+            ClearCardArray(game->hand, &game->hand_size);
+        }
+
     }
 }
 
