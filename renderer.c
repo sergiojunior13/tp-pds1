@@ -170,7 +170,6 @@ void RenderEnergy(Renderer* renderer, Game* game) {
   float x = ENERGY_X + (ENERGY_WIDTH / 2.0) + 5;
   float y = ENERGY_Y + (ENERGY_WIDTH / 2.0) - 13;
 
-  // DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), x, y - scale, scale + 1, scale + 1, ALLEGRO_ALIGN_CENTER, energyText);
   DrawScaledText(renderer->font, color, x, y, scale, scale, ALLEGRO_ALIGN_CENTER, energyText);
 }
 

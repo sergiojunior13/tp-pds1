@@ -99,10 +99,12 @@ void useCard(Game* game) {
 
     int used_card = 0;
     Card card;
+    int card_index = -1;
 
     if (game->focused_entity.type == Card_Entity) {
         Card focused_card = game->hand[game->focused_entity.index];
         card = focused_card;
+        card_index = game->focused_entity.index;
 
 
         if (focused_card.cost > game->player.energy) {
@@ -116,7 +118,7 @@ void useCard(Game* game) {
             game->selected_card_index = game->focused_entity.index;
             break;
         case Card_Type_Defense:
-            game->player.shield_pts = focused_card.effect;
+            game->player.shield_pts += focused_card.effect;
             used_card = 1;
             break;
         case Card_Type_Special:
@@ -130,6 +132,8 @@ void useCard(Game* game) {
         Enemy* selected_enemy_ptr = &game->enemies[game->focused_entity.index];
 
         card = selected_card;
+        card_index = game->selected_card_index;
+
 
         if (game->selected_card_index == -1) {
             // TODO: display this msg into screen
@@ -154,7 +158,7 @@ void useCard(Game* game) {
 
     if (used_card) {
         game->player.energy -= card.cost;
-        RemoveCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
+        RemoveCardFromArray(game->hand, &game->hand_size, card_index);
         AddCardToArray(game->discard, &game->discard_size, card);
     }
 }
