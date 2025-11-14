@@ -19,5 +19,5 @@ void RenderPlayer(const Renderer* renderer, const Player* player) {
 
     Hp hp = { 80, 100 };
 
-    RenderHealthBar(&player->hp, begin_x, x_end, health_bar_begin_y, renderer->font);
+    RenderHealthBar(&player->hp, begin_x, x_end, health_bar_begin_y, renderer->font, al_map_rgb(0, 255, 0));
 }

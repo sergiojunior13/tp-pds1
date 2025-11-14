@@ -117,7 +117,7 @@ void RenderDiscardDeck(Renderer* renderer, Game* game) {
 }
 
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
-  ALLEGRO_FONT* font) {
+  ALLEGRO_FONT* font, ALLEGRO_COLOR color) {
   al_draw_filled_rounded_rectangle(
     x_begin - HEALTH_BAR_PADDING,
     y_begin,
@@ -132,7 +132,20 @@ void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
     y_begin + HEALTH_BAR_PADDING,
     health_bar_width_life_percentage,
     y_begin + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING,
-    HEALTH_BAR_RX, HEALTH_BAR_RY, al_map_rgb(0, 255, 0));
+    HEALTH_BAR_RX, HEALTH_BAR_RY, color);
+
+  // Make the bar color darker
+  color.r /= 1.3;
+  color.g /= 1.3;
+  color.b /= 1.3;
+
+  // Draw half of the bar with diff color
+  al_draw_filled_rounded_rectangle(
+    x_begin,
+    y_begin + HEALTH_BAR_PADDING,
+    health_bar_width_life_percentage,
+    y_begin + (HEALTH_BAR_HEIGHT / 2.0) + HEALTH_BAR_PADDING,
+    HEALTH_BAR_RX, HEALTH_BAR_RY, color);
 
   char text[100] = "";
   sprintf(text, "%d/%d", hp->crr, hp->max);
@@ -145,7 +158,9 @@ void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
     text_begin_y, x_scale, y_scale, ALLEGRO_ALIGN_CENTER, text);
 }
 
-void RenderEnergy(Renderer* renderer) {}
+void RenderEnergy(Renderer* renderer) {
+
+}
 
 float RenderImage(Imgs_Ids img_id, float x, float y, float width) {
   float img_w = al_get_bitmap_width(imgs_bitmaps[img_id]);

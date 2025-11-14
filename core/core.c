@@ -69,6 +69,7 @@ Game InitGame() {
     Game game;
 
     game.player.energy = 3;
+    game.player.shield_pts = 0;
     game.player.hp = (Hp){ 100, 100 };
 
     GenerateEnemies(game.enemies);
@@ -96,24 +97,40 @@ Game InitGame() {
 void useCard(Game* game) {
     game->keyboard_keys[ALLEGRO_KEY_ENTER] |= GAME_KEY_SEEN; // Set that already processed this key
 
-    Card selected_card;
-
+    int used_card = 0;
+    Card card;
 
     if (game->focused_entity.type == Card_Entity) {
         Card focused_card = game->hand[game->focused_entity.index];
+        card = focused_card;
 
-        game->selected_card_index = game->focused_entity.index;
+
+        if (focused_card.cost > game->player.energy) {
+            // TODO: display this msg into screen
+            printf("Não possui energia suficiente!\n");
+            return;
+        }
 
         switch (focused_card.type) {
+        case Card_Type_Attack:
+            game->selected_card_index = game->focused_entity.index;
+            break;
         case Card_Type_Defense:
-            // TODO: apply defense effect into player
+            game->player.shield_pts = focused_card.effect;
+            used_card = 1;
             break;
         case Card_Type_Special:
             // TODO: apply special card effect
+            used_card = 1;
             break;
         }
     }
     else if (game->focused_entity.type == Enemy_Entity) {
+        Card selected_card = game->hand[game->selected_card_index];
+        Enemy* selected_enemy_ptr = &game->enemies[game->focused_entity.index];
+
+        card = selected_card;
+
         if (game->selected_card_index == -1) {
             // TODO: display this msg into screen
             printf("Selecione uma carta primeiro!\n");
@@ -126,21 +143,19 @@ void useCard(Game* game) {
             return;
         }
 
-        Enemy* selected_enemy_ptr = &game->enemies[game->focused_entity.index];
-
-        selected_card = game->hand[game->selected_card_index];
+        used_card = 1;
 
         selected_enemy_ptr->hp.crr -= selected_card.effect;
         if (selected_enemy_ptr->hp.crr < 0) selected_enemy_ptr->hp.crr = 0; // Deal the card damage to enemy
 
-        game->player.energy -= selected_card.cost;
-
-        RemoveCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
-        AddCardToArray(game->discard, &game->discard_size, selected_card);
 
         game->selected_card_index = -1; // Unselect the card
+    }
 
-
+    if (used_card) {
+        game->player.energy -= card.cost;
+        RemoveCardFromArray(game->hand, &game->hand_size, game->selected_card_index);
+        AddCardToArray(game->discard, &game->discard_size, card);
     }
 }
 

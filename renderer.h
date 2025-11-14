@@ -29,7 +29,7 @@ void DrawScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y,
   float x_scale, float y_scale, int alignment, const char* text);
 
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
-  ALLEGRO_FONT* font);
+  ALLEGRO_FONT* font, ALLEGRO_COLOR color);
 
 float RenderImage(Imgs_Ids img_id, float x, float y, float width);
 

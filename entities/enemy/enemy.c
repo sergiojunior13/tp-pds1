@@ -29,6 +29,7 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
     float center_y = begin_y + width / 2.0;
 
     ALLEGRO_COLOR enemy_color = enemy->type == Enemy_Strong ? al_map_rgb(211, 175, 55) : al_map_rgb(255, 0, 0);
+    ALLEGRO_COLOR health_bar_color = enemy->type == Enemy_Strong ? al_map_rgb(211, 175, 55) : al_map_rgb(0, 255, 0);
 
     al_draw_filled_circle(center_x, center_y, width / 2.0,
         enemy_color);
@@ -36,7 +37,7 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 
     float health_bar_begin_y = begin_y + width + 10;
 
-    RenderHealthBar(&enemy->hp, begin_x, x_end, health_bar_begin_y, renderer->font);
+    RenderHealthBar(&enemy->hp, begin_x, x_end, health_bar_begin_y, renderer->font, health_bar_color);
 
     float img_y = health_bar_begin_y + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING * 2 + 5;
     RenderImage(Shield_Img_Id, center_x, img_y, 32);
