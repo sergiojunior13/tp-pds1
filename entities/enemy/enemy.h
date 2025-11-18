@@ -10,9 +10,22 @@ typedef enum EnemyType {
     Enemy_Weak, Enemy_Strong
 } EnemyType;
 
+typedef enum ActionType {
+    Attack_Action, Defense_Action
+} ActionType;
+
+typedef struct EnemyAction {
+    ActionType type;
+    int effect;
+    int level;
+} EnemyAction;
+
 typedef struct Enemy {
     Hp hp;
+    int defense_pts;
     EnemyType type;
+    EnemyAction actions[3];
+    int actions_size;
 } Enemy;
 
 void RenderEnemies(const Renderer* renderer, Game* game);

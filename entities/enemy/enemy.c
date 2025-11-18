@@ -5,6 +5,8 @@
 #include "images/load-images.h"
 #include "core/core.h"
 
+#include <stdio.h>
+
 #include <allegro5/allegro_primitives.h>
 
 
@@ -39,23 +41,95 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 
     RenderHealthBar(&enemy->hp, begin_x, x_end, health_bar_begin_y, renderer->font, health_bar_color);
 
-    float img_y = health_bar_begin_y + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING * 2 + 5;
-    RenderImage(Shield_Img_Id, center_x, img_y, 32);
-    DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), center_x - 15, img_y + 7, 2.0, 2.0, ALLEGRO_ALIGN_LEFT, "4");
+    // Render defense pts
+    if (enemy->defense_pts > 0) {
+        float defense_y = health_bar_begin_y + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING * 2 + 5;
+        float defense_img_size = 28;
+        RenderImage(Shield_Img_Id, begin_x, defense_y, defense_img_size);
+
+        char defense_text[4];
+        sprintf(defense_text, "%d", enemy->defense_pts);
+        DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), begin_x + defense_img_size / 2.0,
+            defense_y + defense_img_size - 10, 1.7, 1.7, ALLEGRO_ALIGN_LEFT, defense_text);
+    }
+
+
+    // Render next actions
+    float img_size = 28;
+    float img_gap = 8;
+    float font_scale = 1.5;
+    for (int i = 0; i < enemy->actions_size; i++) {
+        EnemyAction action = enemy->actions[i];
+
+        int img_id = action.type == Attack_Action ? Sword_Img_Id : Shield_Img_Id;
+
+        float img_x = center_x - ((img_size * enemy->actions_size + (enemy->actions_size - 1) * img_gap) / 2.0)
+            + img_size * i + img_gap * i;
+        float img_y = begin_y - 10 - img_size;
+        RenderImage(img_id, img_x, img_y, img_size);
+
+        char effect_text[4];
+        sprintf(effect_text, "+%d", action.effect);
+        DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), img_x + img_size / 2.0,
+            img_y + img_size - 10, font_scale, font_scale, ALLEGRO_ALIGN_LEFT, effect_text);
+    }
+
+}
+
+void GenerateEnemyActions(Enemy* enemy) {
+    if (enemy->type == Enemy_Strong)
+        enemy->actions_size = GenRandomNum(2, 3);
+    else enemy->actions_size = GenRandomNum(1, 2);
+
+    int already_has_action_of_lvl1 = 0;
+
+    for (int i = 0; i < enemy->actions_size; i++) {
+        enemy->actions[i].type = GenRandomNum(Attack_Action, Defense_Action);
+
+        if (enemy->type == Enemy_Strong) {
+            enemy->actions[i].level = GenRandomNum(already_has_action_of_lvl1 ? 2 : 1, 3);
+            already_has_action_of_lvl1 = enemy->actions[i].level == 1;
+        }
+        else enemy->actions[i].level = GenRandomNum(0, 1);
+
+        switch (enemy->actions[i].level) {
+        case 0:
+            enemy->actions[i].effect = GenRandomNum(1, 5);
+            break;
+        case 1:
+            enemy->actions[i].effect = GenRandomNum(5, 10);
+            break;
+        case 2:
+            enemy->actions[i].effect = GenRandomNum(10, 15);
+            break;
+        case 3:
+            enemy->actions[i].effect = GenRandomNum(15, 30);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 void GenerateEnemies(Enemy gameEnemies[2]) {
     int already_gen_strong_enemy = 0;
 
     for (int i = 0; i < 2; i++) {
-
+        // Enemy type
         if (!already_gen_strong_enemy) { // Chance of getting '1' is 5%, the chance of appear a strong enemy
             gameEnemies[i].type = GenRandomNum(1, 20) == 1 ? Enemy_Strong : Enemy_Weak;
             already_gen_strong_enemy = 1;
         }
         else gameEnemies[i].type = Enemy_Weak;
 
+        // Enemy HP
         gameEnemies[i].hp.max = gameEnemies[i].hp.crr =
             gameEnemies[i].type == Enemy_Strong ? GenRandomNum(40, 100) : GenRandomNum(10, 30);
+
+        // Enemy defense pts
+        gameEnemies[i].defense_pts = 0;
+
+        // Enemy actions
+        GenerateEnemyActions(&gameEnemies[i]);
     }
 }

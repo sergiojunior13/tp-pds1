@@ -22,6 +22,12 @@ typedef struct Card {
     SpecialCardEffectType effect_type; // Prop just for the special card
 } Card;
 
+void RemoveCardFromArray(Card array[], int* size_ptr, int element_index);
+
+void AddCardToArray(Card array[], int* arr_size_ptr, Card card);
+
+void ClearCardArray(Card array[], int* arr_size_ptr);
+
 void RenderCard(const Renderer* renderer, const Card* card, int x, int y, int is_focused, int is_selected);
 
 void RenderPlayerHand(Renderer* renderer, Game* game);

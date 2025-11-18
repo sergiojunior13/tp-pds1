@@ -4,6 +4,7 @@
 #include <allegro5/allegro5.h>
 
 typedef enum Imgs_Ids {
+    Sword_Img_Id,
     Shield_Img_Id,
     Card_Atk_Img_Id,
     Card_Def_Img_Id,

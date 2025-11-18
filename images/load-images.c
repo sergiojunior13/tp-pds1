@@ -7,6 +7,7 @@ ALLEGRO_BITMAP* imgs_bitmaps[Total_Images];
 
 // The image id/index in the Imgs_Ids enum MUST correspond to the index in this array.
 const char* imgs_src[] = {
+    "images/sword.png",
     "images/shield.png",
     "images/card-attack.png",
     "images/card-defense.png",

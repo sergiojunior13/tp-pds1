@@ -6,26 +6,6 @@
 #include <stdio.h>
 #include <string.h>
 
-void RemoveCardFromArray(Card array[], int* size_ptr, int element_index) {
-    for (int i = element_index; i < (*size_ptr) - 1; i++) {
-        array[i] = array[i + 1];
-    }
-
-    (*size_ptr)--;
-}
-
-void AddCardToArray(Card array[], int* arr_size_ptr, Card card) {
-    array[*arr_size_ptr] = card;
-
-    (*arr_size_ptr)++;
-}
-
-void ClearCardArray(Card array[], int* arr_size_ptr) {
-    memset(array, 0, sizeof(Card) * (*arr_size_ptr));
-
-    (*arr_size_ptr) = 0;
-}
-
 void GenerateDeck(Card game_deck[]) {
     // Attack cards
     for (int i = 0; i < 10; i++) {
@@ -57,7 +37,7 @@ void GenerateDeck(Card game_deck[]) {
     }
 }
 
-void GenerateBuyStack(Card buy_deck[], Card game_deck[]) {
+void GenerateBuyDeck(Card buy_deck[], Card game_deck[]) {
     memcpy(buy_deck, game_deck, 20 * sizeof(Card));
 
     ShuffleCards(buy_deck, 20);
@@ -88,7 +68,7 @@ Game InitGame() {
     game.discard_size = 0;
 
     GenerateDeck(game.deck);
-    GenerateBuyStack(game.buy, game.deck);
+    GenerateBuyDeck(game.buy, game.deck);
     GenerateHand(game.hand, game.buy, &game.buy_size);
 
     game.phase = 0;
@@ -160,6 +140,16 @@ void useCard(Game* game) {
         }
 
         used_card = 1;
+
+        int resultant_effect = selected_card.effect - selected_enemy_ptr->defense_pts;
+        if (resultant_effect > 0) {
+            selected_card.effect = resultant_effect;
+            selected_enemy_ptr->defense_pts = 0;
+        }
+        else {
+            selected_card.effect = 0;
+            selected_enemy_ptr->defense_pts = -1 * resultant_effect;
+        }
 
         selected_enemy_ptr->hp.crr -= selected_card.effect;
         if (selected_enemy_ptr->hp.crr < 0) selected_enemy_ptr->hp.crr = 0;

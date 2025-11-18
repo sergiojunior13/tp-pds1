@@ -9,6 +9,26 @@
 
 int focused_card_index = -1;
 
+void RemoveCardFromArray(Card array[], int* size_ptr, int element_index) {
+    for (int i = element_index; i < (*size_ptr) - 1; i++) {
+        array[i] = array[i + 1];
+    }
+
+    (*size_ptr)--;
+}
+
+void AddCardToArray(Card array[], int* arr_size_ptr, Card card) {
+    array[*arr_size_ptr] = card;
+
+    (*arr_size_ptr)++;
+}
+
+void ClearCardArray(Card array[], int* arr_size_ptr) {
+    memset(array, 0, sizeof(Card) * (*arr_size_ptr));
+
+    (*arr_size_ptr) = 0;
+}
+
 void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_top, int is_focused, int is_selected) {
     if (is_focused) y_top -= 40;
 
