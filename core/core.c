@@ -6,6 +6,24 @@
 #include <stdio.h>
 #include <string.h>
 
+void DiscardHand(Game* game) {
+    for (int i = 0; i < game->hand_size; i++)
+        AddCardToArray(game->discard, &game->discard_size, game->hand[i]);
+
+    ClearCardArray(game->hand, &game->hand_size);
+}
+
+void DealDamage(Hp* entity_hp, int* entity_shield_pts, int damage) {
+    int resultant_damage = damage - (*entity_shield_pts);
+    if (resultant_damage > 0) {
+        entity_hp->crr -= resultant_damage;
+        if (entity_hp->crr < 0) entity_hp->crr = 0;
+        (*entity_shield_pts) = 0;
+    }
+    else (*entity_shield_pts) = -1 * resultant_damage;
+
+}
+
 void GenerateDeck(Card game_deck[]) {
     // Attack cards
     for (int i = 0; i < 10; i++) {
@@ -52,31 +70,37 @@ void GenerateHand(Card game_hand[], Card buy_deck[], int* buy_deck_size_ptr) {
     }
 }
 
+void InitCombat(Game* game) {
+    game->player.energy = 3;
+    game->player.shield_pts = 0;
+
+    GenerateEnemies(game->enemies);
+    game->enemies_size = 2;
+
+    game->buy_size = 20;
+    game->hand_size = 5;
+    game->discard_size = 0;
+
+    GenerateDeck(game->deck);
+    GenerateBuyDeck(game->buy, game->deck);
+    GenerateHand(game->hand, game->buy, &game->buy_size);
+
+    game->turn = Player_Turn;
+
+    game->focused_entity.index = -1;
+    game->focused_entity.type = -1;
+    game->selected_card_index = -1;
+    game->selected_enemy_index = -1;
+}
+
 Game InitGame() {
     Game game;
 
-    game.player.energy = 3;
-    game.player.shield_pts = 0;
     game.player.hp = (Hp){ 100, 100 };
 
-    GenerateEnemies(game.enemies);
+    game.phase = 1;
 
-    game.enemies_size = 2;
-
-    game.buy_size = 20;
-    game.hand_size = 5;
-    game.discard_size = 0;
-
-    GenerateDeck(game.deck);
-    GenerateBuyDeck(game.buy, game.deck);
-    GenerateHand(game.hand, game.buy, &game.buy_size);
-
-    game.phase = 0;
-
-    game.focused_entity.index = -1;
-    game.focused_entity.type = -1;
-    game.selected_card_index = -1;
-    game.selected_enemy_index = -1;
+    InitCombat(&game);
 
     return game;
 }
@@ -109,11 +133,15 @@ void useCard(Game* game) {
             used_card = 1;
             break;
         case Card_Type_Special:
-            if (focused_card.effect_type == Special_Card_Heal_Hp)
-                game->player.hp.crr += game->player.hp.crr + focused_card.effect > 100 ? 0 : focused_card.effect;
+            if (focused_card.effect_type == Special_Card_Heal_Hp) {
+                int newHp = game->player.hp.crr + focused_card.effect;
+                if (newHp > 100)
+                    game->player.hp.crr = 100;
+                else game->player.hp.crr = newHp;
+            }
             else
-                for (int i = 0; i < game->enemies_size; i++)
-                    game->enemies[i].hp.crr /= 2; // Remove half of enemies life
+                for (int i = 0; i < game->enemies_size; i++)// Remove half of enemies life
+                    game->enemies[i].hp.crr /= 2;
 
             used_card = 1;
             break;
@@ -121,7 +149,7 @@ void useCard(Game* game) {
     }
     else if (game->focused_entity.type == Enemy_Entity) {
         Card selected_card = game->hand[game->selected_card_index];
-        Enemy* selected_enemy_ptr = &game->enemies[game->focused_entity.index];
+        Enemy* selected_enemy = &game->enemies[game->focused_entity.index];
 
         card = selected_card;
         card_index = game->selected_card_index;
@@ -141,19 +169,7 @@ void useCard(Game* game) {
 
         used_card = 1;
 
-        int resultant_effect = selected_card.effect - selected_enemy_ptr->defense_pts;
-        if (resultant_effect > 0) {
-            selected_card.effect = resultant_effect;
-            selected_enemy_ptr->defense_pts = 0;
-        }
-        else {
-            selected_card.effect = 0;
-            selected_enemy_ptr->defense_pts = -1 * resultant_effect;
-        }
-
-        selected_enemy_ptr->hp.crr -= selected_card.effect;
-        if (selected_enemy_ptr->hp.crr < 0) selected_enemy_ptr->hp.crr = 0;
-
+        DealDamage(&selected_enemy->hp, &selected_enemy->shield_pts, selected_card.effect);
 
         game->selected_card_index = -1; // Unselect the card
     }
@@ -164,13 +180,8 @@ void useCard(Game* game) {
         RemoveCardFromArray(game->hand, &game->hand_size, card_index);
         AddCardToArray(game->discard, &game->discard_size, card);
 
-        if (card.type == Card_Type_Special) {
-            for (int i = 0; i < game->hand_size; i++)
-                AddCardToArray(game->discard, &game->discard_size, game->hand[i]);
-
-            ClearCardArray(game->hand, &game->hand_size);
-        }
-
+        if (card.type == Card_Type_Special)
+            DiscardHand(game);
     }
 }
 
@@ -255,12 +266,85 @@ void CheckKeys(Game* game) {
     }
 
     // If pressed the ENTER key and if still it wasn't processed
-    if (!(game->keyboard_keys[ALLEGRO_KEY_ENTER] & GAME_KEY_SEEN) && (game->keyboard_keys[ALLEGRO_KEY_ENTER] & GAME_KEY_DOWN)) {
+    if (!(game->keyboard_keys[ALLEGRO_KEY_ENTER] & GAME_KEY_SEEN) &&
+        (game->keyboard_keys[ALLEGRO_KEY_ENTER] & GAME_KEY_DOWN)) {
         useCard(game);
     }
 
+    // End player turn if press ESC
+    if (!(game->keyboard_keys[ALLEGRO_KEY_ESCAPE] & GAME_KEY_SEEN) &&
+        (game->keyboard_keys[ALLEGRO_KEY_ESCAPE] & GAME_KEY_DOWN)) {
+        game->turn = Enemy_Turn;
+
+        DiscardHand(game);
+
+        for (int i = 0; i < game->enemies_size; i++)
+            game->enemies[i].shield_pts = 0;
+
+        game->keyboard_keys[ALLEGRO_KEY_ESCAPE] |= GAME_KEY_SEEN;
+    }
 }
 
 void AdvanceGame(Renderer* renderer, Game* game) {
     CheckKeys(game);
+
+    if (game->player.hp.crr <= 0) {
+        game->phase = 1;
+        game->player.hp.crr = 100;
+        InitCombat(game);
+        return;
+    }
+
+    if (game->turn == Enemy_Turn) {
+        for (int i = 0; i < game->enemies_size; i++) {
+            Enemy enemy = game->enemies[i];
+
+            if (enemy.hp.crr <= 0) {
+                RemoveEnemyFromArray(game->enemies, &game->enemies_size, i);
+
+                i--; // Need to do this because the enemies_size have changed
+                continue;
+            }
+
+            // Execute enemy actions
+            for (int j = 0; j < enemy.actions_size; j++) {
+                // al_rest(0.8);
+
+                EnemyAction action = enemy.actions[j];
+
+                if (action.type == Attack_Action) {
+                    DealDamage(&game->player.hp, &game->player.shield_pts, action.effect);
+                }
+                else {
+                    game->enemies[i].shield_pts += action.effect;
+                }
+            }
+
+            // al_rest(1.5);
+        }
+
+        if (game->enemies_size == 0) {
+            game->phase++;
+            InitCombat(game);
+            return;
+        }
+
+        game->turn = Player_Turn;
+
+        if (game->buy_size < 5) {
+            // Copy the discard to the buy deck and shuffle it
+            memcpy(game->buy, game->discard, 20 * sizeof(Card));
+            game->buy_size = 20;
+            ShuffleCards(game->buy, 20);
+
+            // Clear the discard deck
+            memset(game->discard, 0, 20 * sizeof(Card));
+            game->discard_size = 0;
+        }
+
+        GenerateHand(game->hand, game->buy, &game->buy_size);
+        game->hand_size = 5;
+        game->player.energy = 3;
+        game->player.shield_pts = 0;
+    }
 }

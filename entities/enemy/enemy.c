@@ -9,9 +9,22 @@
 
 #include <allegro5/allegro_primitives.h>
 
+void RemoveEnemyFromArray(Enemy array[], int* size_ptr, int element_index) {
+    if ((*size_ptr) == 1) {
+        (*size_ptr)--;
+        memset(array, 0, 2 * sizeof(Enemy));
+        return;
+    }
+
+    for (int i = element_index; i < (*size_ptr) - 1; i++) {
+        array[i] = array[i + 1];
+    }
+
+    (*size_ptr)--;
+}
 
 void RenderEnemies(const Renderer* renderer, Game* game) {
-    int begin_x = DISPLAY_BUFFER_WIDTH - CREATURE_DISTANCE_TO_WINDOW_CORNER - ENEMY_RADIUS;
+    int begin_x = renderer->display_width - CREATURE_DISTANCE_TO_WINDOW_CORNER - ENEMY_RADIUS;
 
     int is_some_enemy_focused = game->focused_entity.type == Enemy_Entity;
     int focused_enemy_index = is_some_enemy_focused ? game->focused_entity.index : -1;
@@ -22,7 +35,7 @@ void RenderEnemies(const Renderer* renderer, Game* game) {
 }
 
 void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int begin_y, int is_focused) {
-    if (enemy->hp.crr == 0) return;
+    // if (enemy->hp.crr == 0) return;
 
     if (is_focused) begin_y -= 40;
 
@@ -39,25 +52,24 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 
     float health_bar_begin_y = begin_y + width + 10;
 
-    RenderHealthBar(&enemy->hp, begin_x, x_end, health_bar_begin_y, renderer->font, health_bar_color);
+    RenderHealthBar(&enemy->hp, begin_x, x_end, health_bar_begin_y, health_bar_color);
 
     // Render defense pts
-    if (enemy->defense_pts > 0) {
+    if (enemy->shield_pts > 0) {
         float defense_y = health_bar_begin_y + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING * 2 + 5;
         float defense_img_size = 28;
         RenderImage(Shield_Img_Id, begin_x, defense_y, defense_img_size);
 
         char defense_text[4];
-        sprintf(defense_text, "%d", enemy->defense_pts);
-        DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), begin_x + defense_img_size / 2.0,
-            defense_y + defense_img_size - 10, 1.7, 1.7, ALLEGRO_ALIGN_LEFT, defense_text);
+        sprintf(defense_text, "%d", enemy->shield_pts);
+        DrawText(al_map_rgb(255, 255, 255), 24, begin_x + defense_img_size / 2.0 + 3,
+            defense_y + defense_img_size - 22, ALLEGRO_ALIGN_LEFT, defense_text);
     }
 
 
     // Render next actions
-    float img_size = 28;
-    float img_gap = 8;
-    float font_scale = 1.5;
+    float img_size = 24;
+    float img_gap = 12;
     for (int i = 0; i < enemy->actions_size; i++) {
         EnemyAction action = enemy->actions[i];
 
@@ -70,8 +82,8 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 
         char effect_text[4];
         sprintf(effect_text, "+%d", action.effect);
-        DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), img_x + img_size / 2.0,
-            img_y + img_size - 10, font_scale, font_scale, ALLEGRO_ALIGN_LEFT, effect_text);
+        DrawText(al_map_rgb(255, 255, 255), 20, img_x + img_size + 7,
+            img_y + img_size - 10, ALLEGRO_ALIGN_RIGHT, effect_text);
     }
 
 }
@@ -84,7 +96,7 @@ void GenerateEnemyActions(Enemy* enemy) {
     int already_has_action_of_lvl1 = 0;
 
     for (int i = 0; i < enemy->actions_size; i++) {
-        enemy->actions[i].type = GenRandomNum(Attack_Action, Defense_Action);
+        enemy->actions[i].type = i == 0 ? Attack_Action : (Attack_Action, Defense_Action);
 
         if (enemy->type == Enemy_Strong) {
             enemy->actions[i].level = GenRandomNum(already_has_action_of_lvl1 ? 2 : 1, 3);
@@ -127,7 +139,7 @@ void GenerateEnemies(Enemy gameEnemies[2]) {
             gameEnemies[i].type == Enemy_Strong ? GenRandomNum(40, 100) : GenRandomNum(10, 30);
 
         // Enemy defense pts
-        gameEnemies[i].defense_pts = 0;
+        gameEnemies[i].shield_pts = 0;
 
         // Enemy actions
         GenerateEnemyActions(&gameEnemies[i]);

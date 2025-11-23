@@ -1,6 +1,8 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_ttf.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,6 +19,8 @@ int main() {
   must_init(al_init_image_addon(), "images");
   must_init(al_init_primitives_addon(), "primitives");
   must_init(al_install_keyboard(), "keyboard");
+  must_init(al_init_font_addon(), "init font");
+  must_init(al_init_ttf_addon(), "init font");
 
   load_images();
 

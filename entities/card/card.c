@@ -57,10 +57,8 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
     char card_cost_text[10] = "";
     sprintf(card_cost_text, "%d", card->cost);
 
-    DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), x_left + 19,
-        y_top + 9, 1 / scale, 1 / scale, ALLEGRO_ALIGN_CENTER, card_cost_text);
-
-    float effect_text_scale = 1.7;
+    DrawText(al_map_rgb(255, 255, 255), 32, x_left + 18,
+        y_top - 1, ALLEGRO_ALIGN_CENTER, card_cost_text);
 
     char card_effect_text[30] = "";
     char attack_format[] = "%d\nAtaque";
@@ -69,6 +67,7 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
     char special_enemies_format[] = "Remova metade da vida dos inimigos";
 
     char format[100];
+    int font_size = 40;
 
     switch (card->type) {
     case Card_Type_Attack:
@@ -82,7 +81,7 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
             strcpy(format, special_hp_format);
         else {
             strcpy(format, special_enemies_format);
-            effect_text_scale = 1.4;
+            font_size = 32;
         }
         break;
     default:
@@ -90,14 +89,16 @@ void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_to
     }
 
     sprintf(card_effect_text, format, card->effect);
+    float x = x_left + 3 + CARD_WIDTH / 2.0;
+    float y = y_top + CARD_HEIGHT / 2.0 - (font_size == 40 ? 1.5 : 2.5) * font_size * DEFAULT_LINE_HEIGHT - 5;
 
-    DrawMultilineScaledText(renderer->font, al_map_rgb(255, 255, 255), x_left + 3 + CARD_WIDTH / 2.0,
-        y_top + CARD_HEIGHT / 2.0 - 2 * DEFAULT_LINE_HEIGHT, CARD_WIDTH - 40, effect_text_scale, effect_text_scale, ALLEGRO_ALIGN_CENTER, card_effect_text);
+    DrawMultilineText(al_map_rgb(255, 255, 255), font_size, x,
+        y, CARD_WIDTH - 40, ALLEGRO_ALIGN_CENTER, card_effect_text);
 }
 
 void RenderPlayerHand(Renderer* renderer, Game* game) {
-    float start_x = (DISPLAY_BUFFER_WIDTH / 2.0) - (CARD_X_OFFSET * (game->hand_size - 1) + CARD_WIDTH) / 2.0;
-    float y = DISPLAY_BUFFER_HEIGHT - HAND_Y_DISTANCE_TO_BOTTOM - CARD_HEIGHT;
+    float start_x = (renderer->display_width / 2.0) - (CARD_X_OFFSET * (game->hand_size - 1) + CARD_WIDTH) / 2.0;
+    float y = renderer->display_height - HAND_Y_DISTANCE_TO_BOTTOM - CARD_HEIGHT;
 
     int is_some_card_focused = game->focused_entity.type == Card_Entity;
     int focused_card_index = is_some_card_focused ? game->focused_entity.index : -1;

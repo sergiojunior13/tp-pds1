@@ -7,15 +7,18 @@
 
 typedef struct Renderer Renderer;
 
-typedef enum { Card_Entity, Enemy_Entity } Entity_Type;
+typedef enum EntityType { Card_Entity, Enemy_Entity } EntityType;
+
+typedef enum GameTurn { Player_Turn, Enemy_Turn } GameTurn;
 
 typedef struct Entity {
-    Entity_Type type;
+    EntityType type;
     int index;
 } Entity;
 
 typedef struct Game {
     int phase;
+    GameTurn turn;
 
     Player player;
     Enemy enemies[2];

@@ -29,7 +29,7 @@
 #define HEALTH_BAR_RX 2
 #define HEALTH_BAR_RY 2
 
-#define DEFAULT_LINE_HEIGHT 13
+#define DEFAULT_LINE_HEIGHT 0.7
 
 /*  ------ Card ------ */
 

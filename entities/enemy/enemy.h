@@ -22,12 +22,13 @@ typedef struct EnemyAction {
 
 typedef struct Enemy {
     Hp hp;
-    int defense_pts;
+    int shield_pts;
     EnemyType type;
     EnemyAction actions[3];
     int actions_size;
 } Enemy;
 
+void RemoveEnemyFromArray(Enemy array[], int* size_ptr, int element_index);
 void RenderEnemies(const Renderer* renderer, Game* game);
 void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int begin_y, int is_focused);
 void GenerateEnemies(Enemy gameEnemies[2]);

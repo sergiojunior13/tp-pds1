@@ -21,7 +21,7 @@ void RenderPlayer(const Renderer* renderer, const Player* player) {
 
     Hp hp = { 80, 100 };
 
-    RenderHealthBar(&player->hp, begin_x, x_end, health_bar_begin_y, renderer->font, al_map_rgb(0, 255, 0));
+    RenderHealthBar(&player->hp, begin_x, x_end, health_bar_begin_y, al_map_rgb(0, 255, 0));
 
     if (player->shield_pts > 0) {
         RenderImage(Shield_Img_Id, begin_x, health_bar_begin_y + HEALTH_BAR_HEIGHT + 10, 25);
@@ -29,10 +29,8 @@ void RenderPlayer(const Renderer* renderer, const Player* player) {
         char shieldTxt[2];
         sprintf(shieldTxt, "%d", player->shield_pts);
 
-        float scale = 1.8;
         float x = begin_x + 15;
         float y = health_bar_begin_y + HEALTH_BAR_HEIGHT + 25;
-        DrawScaledText(renderer->font, al_map_rgb(255, 255, 255),
-            x, y, scale, scale, 0, shieldTxt);
+        DrawText(al_map_rgb(255, 255, 255), 8, x, y, 0, shieldTxt);
     }
 }

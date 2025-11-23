@@ -8,12 +8,16 @@ typedef struct Hp Hp;
 typedef enum Imgs_Ids Imgs_Ids;
 typedef struct Game Game;
 
+typedef struct Font {
+  ALLEGRO_FONT* ptr;
+  int size;
+} Font;
+
 typedef struct Renderer {
   ALLEGRO_DISPLAY* display;
+  float display_width;
+  float display_height;
   ALLEGRO_BITMAP* display_buffer;
-
-  ALLEGRO_FONT* font;
-
 } Renderer;
 
 void FillRenderer(Renderer* renderer);
@@ -22,14 +26,12 @@ void Render(Renderer* renderer, Game* game);
 
 void ClearRenderer(Renderer* renderer);
 
-void DrawMultilineScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y, float max_width,
-  float x_scale, float y_scale, int alignment, const char* text);
+void DrawMultilineText(ALLEGRO_COLOR color, int font_size, float x, float y, float max_width, int alignment, const char* text);
 
-void DrawScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y,
-  float x_scale, float y_scale, int alignment, const char* text);
+void DrawText(ALLEGRO_COLOR color, int font_size, float x, float y, int alignment, const char* text);
 
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
-  ALLEGRO_FONT* font, ALLEGRO_COLOR color);
+  ALLEGRO_COLOR color);
 
 float RenderImage(Imgs_Ids img_id, float x, float y, float width);
 

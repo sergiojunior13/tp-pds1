@@ -15,42 +15,37 @@
 #include "entities/enemy/enemy.h"
 #include "entities/card/card.h"
 
-void DrawMultilineScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y, float max_width,
-  float x_scale, float y_scale, int alignment, const char* text) {
-  ALLEGRO_TRANSFORM transform;
-  al_identity_transform(&transform);  // Start with an identity transform
-  al_scale_transform(&transform, x_scale, y_scale);  // Apply scaling (e.g., sx=2.0, sy=2.0 for double size)
-  al_use_transform(&transform);  // Use the transform for subsequent drawing
+Font fonts_loaded[20];
+int fonts_size = 0;
 
-  // Adjust x, y to the scale 
-  x /= x_scale;
-  y /= y_scale;
+Font* LoadFont(int size) {
+  // If already loaded font of that size
+  for (int i = 0; i < fonts_size; i++) {
+    if (fonts_loaded[i].size == size)
+      return &fonts_loaded[i];
+  }
 
-  // al_draw_multiline_text(font, color, x, y, 150, DEFAULT_LINE_HEIGHT, alignment, text);
-  al_draw_multiline_text(font, color, x, y, max_width, DEFAULT_LINE_HEIGHT, alignment, text);
+  Font font;
+  font.ptr = al_load_font("Jersey10-Regular.ttf", size, 0);
+  must_init(font.ptr, "load font");
+  font.size = size;
 
-  // Reset the transform
-  al_identity_transform(&transform);
-  al_use_transform(&transform);
+  fonts_loaded[fonts_size] = font;
+  fonts_size++;
+
+  return &fonts_loaded[fonts_size - 1];
 }
 
-void DrawScaledText(ALLEGRO_FONT* font, ALLEGRO_COLOR color, float x, float y,
-  float x_scale, float y_scale, int alignment, const char* text) {
-  ALLEGRO_TRANSFORM transform;
-  al_identity_transform(&transform);  // Start with an identity transform
-  al_scale_transform(&transform, x_scale, y_scale);  // Apply scaling (e.g., sx=2.0, sy=2.0 for double size)
-  al_use_transform(&transform);  // Use the transform for subsequent drawing
+void DrawMultilineText(ALLEGRO_COLOR color, int font_size, float x, float y, float max_width, int alignment, const char* text) {
+  Font* font = LoadFont(font_size);
 
-  // Adjust x, y to the scale 
-  x /= x_scale;
-  y /= y_scale;
+  al_draw_multiline_text(font->ptr, color, x, y, max_width, DEFAULT_LINE_HEIGHT * font_size, alignment, text);
+}
 
-  // al_draw_multiline_text(font, color, x, y, 150, DEFAULT_LINE_HEIGHT, alignment, text);
-  al_draw_text(font, color, x, y, alignment, text);
+void DrawText(ALLEGRO_COLOR color, int font_size, float x, float y, int alignment, const char* text) {
+  Font* font = LoadFont(font_size);
 
-  // Reset the transform
-  al_identity_transform(&transform);
-  al_use_transform(&transform);
+  al_draw_text(font->ptr, color, x, y, alignment, text);
 }
 
 void FillRenderer(Renderer* renderer) {
@@ -58,18 +53,18 @@ void FillRenderer(Renderer* renderer) {
   al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
   al_set_new_bitmap_flags(ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR);
 
+  al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
   renderer->display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   must_init(renderer->display, "display");
 
-  renderer->display_buffer =
-    al_create_bitmap(DISPLAY_BUFFER_WIDTH, DISPLAY_BUFFER_HEIGHT);
-  must_init(renderer->display_buffer, "display buffer");
+  renderer->display_width = al_get_display_width(renderer->display);
+  renderer->display_height = al_get_display_height(renderer->display);
 
-  renderer->font = al_create_builtin_font();
-  must_init(renderer->font, "font");
+  renderer->display_buffer = al_create_bitmap(renderer->display_width, renderer->display_height);
+  must_init(renderer->display_buffer, "display buffer");
 }
 
-void RenderBackground(Game* game) {
+void RenderBackground(Renderer* renderer, Game* game) {
   int bgId = game->phase < 11 ? Normal_Bg_Img_Id : End_Bg_Img_Id;
 
   ALLEGRO_BITMAP* bg_img = imgs_bitmaps[bgId];
@@ -80,44 +75,45 @@ void RenderBackground(Game* game) {
     al_get_bitmap_width(bg_img),
     al_get_bitmap_height(bg_img),
     0, 0,
-    DISPLAY_WIDTH, DISPLAY_HEIGHT,
+    renderer->display_width, renderer->display_height,
     0);
 }
 
 void RenderBuyDeck(Renderer* renderer, Game* game) {
   float x = DECK_DISTANCE_X_TO_BORDER;
-  float y = DISPLAY_HEIGHT - DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
+  float y = renderer->display_height - DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
 
   RenderImage(Buy_Stack_Img_Id, x, y, DECK_WIDTH);
 
   char n_buy_cards_text[2];
   sprintf(n_buy_cards_text, "%d", game->buy_size);
 
-  float text_scale = 2.6;
-  float text_x = x + DECK_WIDTH - 33;
-  float text_y = y + DECK_HEIGHT - 42;
+  int font_size = 52;
 
-  DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), text_x, text_y, text_scale, text_scale, ALLEGRO_ALIGN_CENTER, n_buy_cards_text);
+  float text_x = x + DECK_WIDTH - 34;
+  float text_y = y + DECK_HEIGHT - 60;
+
+  DrawText(al_map_rgb(255, 255, 255), font_size, text_x, text_y, ALLEGRO_ALIGN_CENTER, n_buy_cards_text);
 }
 
 void RenderDiscardDeck(Renderer* renderer, Game* game) {
-  float x = DISPLAY_WIDTH - DECK_DISTANCE_X_TO_BORDER - DECK_WIDTH;
-  float y = DISPLAY_HEIGHT - DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
+  float x = renderer->display_width - DECK_DISTANCE_X_TO_BORDER - DECK_WIDTH;
+  float y = renderer->display_height - DECK_DISTANCE_Y_TO_BORDER - DECK_HEIGHT;
 
   RenderImage(Discard_Stack_Img_Id, x, y, DECK_WIDTH);
 
   char n_discard_cards_text[2];
   sprintf(n_discard_cards_text, "%d", game->discard_size);
 
-  float text_scale = 2.6;
-  float text_x = x + 33;
-  float text_y = y + DECK_HEIGHT - 42;
+  int font_size = 52;
+  float text_x = x + 34;
+  float text_y = y + DECK_HEIGHT - 60;
 
-  DrawScaledText(renderer->font, al_map_rgb(255, 255, 255), text_x, text_y, text_scale, text_scale, ALLEGRO_ALIGN_CENTER, n_discard_cards_text);
+  DrawText(al_map_rgb(255, 255, 255), font_size, text_x, text_y, ALLEGRO_ALIGN_CENTER, n_discard_cards_text);
 }
 
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
-  ALLEGRO_FONT* font, ALLEGRO_COLOR color) {
+  ALLEGRO_COLOR color) {
   al_draw_filled_rounded_rectangle(
     x_begin - HEALTH_BAR_PADDING,
     y_begin,
@@ -150,12 +146,12 @@ void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
   char text[100] = "";
   sprintf(text, "%d/%d", hp->crr, hp->max);
 
-  float x_scale = 1.7, y_scale = 1.7;
+  int font_size = 28;
   float center_x = (x_begin + x_end) / 2.0;
-  float text_begin_y = y_begin + HEALTH_BAR_PADDING + (HEALTH_BAR_HEIGHT - DEFAULT_LINE_HEIGHT) / 2.0;
+  float text_begin_y = y_begin + HEALTH_BAR_PADDING + (HEALTH_BAR_HEIGHT - font_size - 3) / 2.0;
 
-  DrawScaledText(font, al_map_rgb(0, 0, 0), center_x,
-    text_begin_y, x_scale, y_scale, ALLEGRO_ALIGN_CENTER, text);
+  DrawText(al_map_rgb(0, 0, 0), font_size, center_x,
+    text_begin_y, ALLEGRO_ALIGN_CENTER, text);
 }
 
 void RenderEnergy(Renderer* renderer, Game* game) {
@@ -166,11 +162,19 @@ void RenderEnergy(Renderer* renderer, Game* game) {
 
   ALLEGRO_COLOR color = al_map_rgb(0, 0, 0);
 
-  float scale = 5.5;
-  float x = ENERGY_X + (ENERGY_WIDTH / 2.0) + 5;
-  float y = ENERGY_Y + (ENERGY_WIDTH / 2.0) - 13;
+  int font_size = 80;
 
-  DrawScaledText(renderer->font, color, x, y, scale, scale, ALLEGRO_ALIGN_CENTER, energyText);
+  float x = ENERGY_X + (ENERGY_WIDTH / 2.0);
+  float y = ENERGY_Y + (ENERGY_WIDTH - font_size) / 2.0 + 8;
+
+  DrawText(color, 72, x, y, ALLEGRO_ALIGN_CENTER, energyText);
+}
+
+void RenderPhase(Renderer* renderer, Game* game) {
+  char phase_text[30];
+  sprintf(phase_text, "Fase %d", game->phase);
+
+  DrawText(al_map_rgb(245, 208, 47), 48, renderer->display_width - 80, 10, ALLEGRO_ALIGN_CENTER, phase_text);
 }
 
 float RenderImage(Imgs_Ids img_id, float x, float y, float width) {
@@ -187,18 +191,19 @@ float RenderImage(Imgs_Ids img_id, float x, float y, float width) {
 void Render(Renderer* renderer, Game* game) {
   al_set_target_bitmap(renderer->display_buffer);
 
-  RenderBackground(game);
-  RenderBuyDeck(renderer, game);
-  RenderDiscardDeck(renderer, game);
+  RenderBackground(renderer, game);
+  RenderPhase(renderer, game);
+  if (game->turn == Player_Turn) {
+    RenderBuyDeck(renderer, game);
+    RenderDiscardDeck(renderer, game);
+    RenderPlayerHand(renderer, game);
+  }
   RenderEnergy(renderer, game);
   RenderPlayer(renderer, &game->player);
   RenderEnemies(renderer, game);
-  RenderPlayerHand(renderer, game);
   al_set_target_backbuffer(renderer->display);
 
-  al_draw_scaled_bitmap(renderer->display_buffer, 0, 0, DISPLAY_BUFFER_WIDTH,
-    DISPLAY_BUFFER_HEIGHT, 0, 0, DISPLAY_WIDTH,
-    DISPLAY_HEIGHT, 0);
+  al_draw_bitmap(renderer->display_buffer, 0, 0, 0);
 
   al_flip_display();
 }
@@ -206,5 +211,8 @@ void Render(Renderer* renderer, Game* game) {
 void ClearRenderer(Renderer* renderer) {
   al_destroy_display(renderer->display);
   al_destroy_bitmap(renderer->display_buffer);
-  al_destroy_font(renderer->font);
+
+  for (int i = 0; i < fonts_size; i++) {
+    al_destroy_font(fonts_loaded[i].ptr);
+  }
 }
