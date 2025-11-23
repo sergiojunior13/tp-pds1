@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "constants.h"
 #include "utils.h"
@@ -17,6 +18,8 @@
 
 Font fonts_loaded[20];
 int fonts_size = 0;
+
+Message message;
 
 Font* LoadFont(int size) {
   // If already loaded font of that size
@@ -34,6 +37,23 @@ Font* LoadFont(int size) {
   fonts_size++;
 
   return &fonts_loaded[fonts_size - 1];
+}
+
+void SetMessage(char* msg, float duration_in_seconds) {
+  strcpy(message.value, msg);
+  message.end_time_seconds = al_get_time() + duration_in_seconds;
+  message.is_to_show = 1;
+}
+
+void DrawMessage(Renderer* renderer) {
+  float x = renderer->display_width / 2.0,
+    y = renderer->display_height / 2.0 + 120;
+
+  DrawMultilineText(al_map_rgb(255, 255, 0), 52, x,
+    y, renderer->display_width * 0.7, ALLEGRO_ALIGN_CENTER, message.value);
+
+  if (al_get_time() >= message.end_time_seconds)
+    message.is_to_show = 0;
 }
 
 void DrawMultilineText(ALLEGRO_COLOR color, int font_size, float x, float y, float max_width, int alignment, const char* text) {
@@ -188,19 +208,25 @@ float RenderImage(Imgs_Ids img_id, float x, float y, float width) {
   return scale;
 }
 
-void Render(Renderer* renderer, Game* game) {
+void Render(Renderer* renderer, ALLEGRO_TIMER* timer, Game* game) {
   al_set_target_bitmap(renderer->display_buffer);
 
   RenderBackground(renderer, game);
   RenderPhase(renderer, game);
+
   if (game->turn == Player_Turn) {
     RenderBuyDeck(renderer, game);
     RenderDiscardDeck(renderer, game);
     RenderPlayerHand(renderer, game);
   }
+
   RenderEnergy(renderer, game);
   RenderPlayer(renderer, &game->player);
   RenderEnemies(renderer, game);
+
+  if (message.is_to_show)
+    DrawMessage(renderer);
+
   al_set_target_backbuffer(renderer->display);
 
   al_draw_bitmap(renderer->display_buffer, 0, 0, 0);

@@ -20,7 +20,7 @@ int main() {
   must_init(al_init_primitives_addon(), "primitives");
   must_init(al_install_keyboard(), "keyboard");
   must_init(al_init_font_addon(), "init font");
-  must_init(al_init_ttf_addon(), "init font");
+  must_init(al_init_ttf_addon(), "init ttf font");
 
   load_images();
 
@@ -62,7 +62,7 @@ int main() {
       game.keyboard_keys[event.keyboard.keycode] = 0;
       break;
     case ALLEGRO_EVENT_DISPLAY_CLOSE:
-      done = true;
+      done = 1;
       break;
     }
 
@@ -72,7 +72,7 @@ int main() {
     // You want to put your combat logic here.
     if (redraw) {
       AdvanceGame(&renderer, &game);
-      Render(&renderer, &game);
+      Render(&renderer, timer, &game);
       redraw = 0;
     }
   }

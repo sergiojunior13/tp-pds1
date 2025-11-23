@@ -60,10 +60,12 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
         float defense_img_size = 28;
         RenderImage(Shield_Img_Id, begin_x, defense_y, defense_img_size);
 
-        char defense_text[4];
-        sprintf(defense_text, "%d", enemy->shield_pts);
-        DrawText(al_map_rgb(255, 255, 255), 24, begin_x + defense_img_size / 2.0 + 3,
-            defense_y + defense_img_size - 22, ALLEGRO_ALIGN_LEFT, defense_text);
+        char shield_text[4];
+        sprintf(shield_text, "%d", enemy->shield_pts);
+
+        float x = begin_x + 20;
+        float y = health_bar_begin_y + HEALTH_BAR_HEIGHT + 26;
+        DrawText(al_map_rgb(255, 255, 255), 24, x, y, 0, shield_text);
     }
 
 

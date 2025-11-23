@@ -119,8 +119,7 @@ void useCard(Game* game) {
 
 
         if (focused_card.cost > game->player.energy) {
-            // TODO: display this msg into screen
-            printf("Não possui energia suficiente!\n");
+            SetMessage("Não possui energia suficiente!", 1.5);
             return;
         }
 
@@ -156,14 +155,12 @@ void useCard(Game* game) {
 
 
         if (game->selected_card_index == -1) {
-            // TODO: display this msg into screen
-            printf("Selecione uma carta primeiro!\n");
+            SetMessage("Selecione uma carta primeiro!", 1.5);
             return;
         }
 
         if (selected_card.cost > game->player.energy) {
-            // TODO: display this msg into screen
-            printf("Não possui energia suficiente!\n");
+            SetMessage("Não possui energia suficiente!", 1.5);
             return;
         }
 
@@ -308,8 +305,6 @@ void AdvanceGame(Renderer* renderer, Game* game) {
 
             // Execute enemy actions
             for (int j = 0; j < enemy.actions_size; j++) {
-                // al_rest(0.8);
-
                 EnemyAction action = enemy.actions[j];
 
                 if (action.type == Attack_Action) {
@@ -319,8 +314,6 @@ void AdvanceGame(Renderer* renderer, Game* game) {
                     game->enemies[i].shield_pts += action.effect;
                 }
             }
-
-            // al_rest(1.5);
         }
 
         if (game->enemies_size == 0) {
@@ -328,7 +321,6 @@ void AdvanceGame(Renderer* renderer, Game* game) {
             InitCombat(game);
             return;
         }
-
         game->turn = Player_Turn;
 
         if (game->buy_size < 5) {

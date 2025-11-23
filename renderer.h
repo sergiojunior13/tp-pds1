@@ -13,18 +13,27 @@ typedef struct Font {
   int size;
 } Font;
 
+typedef struct Message {
+  char value[100];
+  int is_to_show;
+  double end_time_seconds;
+} Message;
+
 typedef struct Renderer {
   ALLEGRO_DISPLAY* display;
   float display_width;
   float display_height;
+
   ALLEGRO_BITMAP* display_buffer;
 } Renderer;
 
 void FillRenderer(Renderer* renderer);
 
-void Render(Renderer* renderer, Game* game);
+void Render(Renderer* renderer, ALLEGRO_TIMER* timer, Game* game);
 
 void ClearRenderer(Renderer* renderer);
+
+void SetMessage(char* message, float duration_in_seconds);
 
 void DrawMultilineText(ALLEGRO_COLOR color, int font_size, float x, float y, float max_width, int alignment, const char* text);
 

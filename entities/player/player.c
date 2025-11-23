@@ -26,11 +26,11 @@ void RenderPlayer(const Renderer* renderer, const Player* player) {
     if (player->shield_pts > 0) {
         RenderImage(Shield_Img_Id, begin_x, health_bar_begin_y + HEALTH_BAR_HEIGHT + 10, 25);
 
-        char shieldTxt[2];
-        sprintf(shieldTxt, "%d", player->shield_pts);
+        char shield_text[2];
+        sprintf(shield_text, "%d", player->shield_pts);
 
-        float x = begin_x + 15;
-        float y = health_bar_begin_y + HEALTH_BAR_HEIGHT + 25;
-        DrawText(al_map_rgb(255, 255, 255), 8, x, y, 0, shieldTxt);
+        float x = begin_x + 20;
+        float y = health_bar_begin_y + HEALTH_BAR_HEIGHT + 26;
+        DrawText(al_map_rgb(255, 255, 255), 24, x, y, 0, shield_text);
     }
 }
