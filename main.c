@@ -22,7 +22,7 @@ int main() {
   must_init(al_init_font_addon(), "init font");
   must_init(al_init_ttf_addon(), "init ttf font");
 
-  load_images();
+  LoadImages();
 
   ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60.0);
   must_init(timer, "timer");
@@ -78,7 +78,7 @@ int main() {
   }
   al_destroy_timer(timer);
   al_destroy_event_queue(queue);
-  destroy_images();
+  DestroyImages();
   ClearRenderer(&renderer);
   return 0;
 }

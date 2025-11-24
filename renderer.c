@@ -87,7 +87,7 @@ void FillRenderer(Renderer* renderer) {
 void RenderBackground(Renderer* renderer, Game* game) {
   int bgId = game->phase < 11 ? Normal_Bg_Img_Id : End_Bg_Img_Id;
 
-  ALLEGRO_BITMAP* bg_img = imgs_bitmaps[bgId];
+  ALLEGRO_BITMAP* bg_img = GetImage(bgId)->bitmap;
 
   al_draw_scaled_bitmap(
     bg_img,
@@ -197,13 +197,15 @@ void RenderPhase(Renderer* renderer, Game* game) {
   DrawText(al_map_rgb(245, 208, 47), 48, renderer->display_width - 80, 10, ALLEGRO_ALIGN_CENTER, phase_text);
 }
 
-float RenderImage(Imgs_Ids img_id, float x, float y, float width) {
-  float img_w = al_get_bitmap_width(imgs_bitmaps[img_id]);
-  float img_h = al_get_bitmap_height(imgs_bitmaps[img_id]);
+float RenderImage(Image_Id img_id, float x, float y, float width) {
+  Image* image = GetImage(img_id);
+
+  float img_w = al_get_bitmap_width(image->bitmap);
+  float img_h = al_get_bitmap_height(image->bitmap);
 
   float scale = width / img_w;
 
-  al_draw_scaled_bitmap(imgs_bitmaps[img_id], 0, 0, img_w, img_h, x, y, img_w * scale, img_h * scale, 0);
+  al_draw_scaled_bitmap(image->bitmap, 0, 0, img_w, img_h, x, y, img_w * scale, img_h * scale, 0);
 
   return scale;
 }

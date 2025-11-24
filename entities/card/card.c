@@ -32,7 +32,7 @@ void ClearCardArray(Card array[], int* arr_size_ptr) {
 void RenderCard(const Renderer* renderer, const Card* card, int x_left, int y_top, int is_focused, int is_selected) {
     if (is_focused) y_top -= 40;
 
-    Imgs_Ids card_img_id;
+    Image_Id card_img_id;
 
     switch (card->type) {
     case Card_Type_Attack:

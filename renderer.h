@@ -5,7 +5,7 @@
 #include <allegro5/allegro_font.h>
 
 typedef struct Hp Hp;
-typedef enum Imgs_Ids Imgs_Ids;
+typedef enum Image_Id Image_Id;
 typedef struct Game Game;
 
 typedef struct Font {
@@ -42,6 +42,6 @@ void DrawText(ALLEGRO_COLOR color, int font_size, float x, float y, int alignmen
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
   ALLEGRO_COLOR color);
 
-float RenderImage(Imgs_Ids img_id, float x, float y, float width);
+float RenderImage(Image_Id img_id, float x, float y, float width);
 
 #endif

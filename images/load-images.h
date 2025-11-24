@@ -3,7 +3,7 @@
 
 #include <allegro5/allegro5.h>
 
-typedef enum Imgs_Ids {
+typedef enum Image_Id {
     Sword_Img_Id,
     Shield_Img_Id,
     Card_Atk_Img_Id,
@@ -14,12 +14,18 @@ typedef enum Imgs_Ids {
     Energy_Img_Id,
     Normal_Bg_Img_Id,
     End_Bg_Img_Id,
-    Total_Images
-} Imgs_Ids;
+    Total_Images // Need's to be the last
+} Image_Id;
 
-extern ALLEGRO_BITMAP* imgs_bitmaps[Total_Images];
+typedef struct Image {
+    Image_Id id;
+    char* src;
+    ALLEGRO_BITMAP* bitmap;
+} Image;
 
-void load_images();
-void destroy_images();
+
+Image* GetImage(Image_Id image_id);
+void LoadImages();
+void DestroyImages();
 
 #endif
