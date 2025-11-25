@@ -13,6 +13,10 @@ Image images[] = {
     {Energy_Img_Id, "images/energy.png"},
     {Normal_Bg_Img_Id, "images/normal-bg.png"},
     {End_Bg_Img_Id, "images/end-bg.png"},
+    {Player_Idle_Img_Id, "images/player/player-idle.png"},
+    {Player_Attack_Img_Id, "images/player/player-attack.png"},
+    {Player_Defense_Img_Id, "images/player/player-defense.png"},
+    {Player_Special_Img_Id, "images/player/player-special.png"},
 };
 
 void LoadImages() {
@@ -30,8 +34,11 @@ Image* GetImage(Image_Id image_id) {
 }
 
 void DestroyImages() {
-    for (int i = 0; i < Total_Images; i++) {
-        al_destroy_bitmap(images[i].bitmap);
-        images[i].bitmap = NULL;
-    }
+    for (int i = 0; i < Total_Images; i++)
+        DestroyImage(i);
+}
+
+void DestroyImage(Image_Id image_id) {
+    al_destroy_bitmap(images[image_id].bitmap);
+    images[image_id].bitmap = NULL;
 }

@@ -11,5 +11,8 @@ typedef struct Player {
     int shield_pts;
 } Player;
 
+void StartPlayerAttackAnimation();
+void StartPlayerDefenseAnimation();
+void StartPlayerSpecialAnimation();
 void RenderPlayer(const Renderer* renderer, const Player* player);
 #endif

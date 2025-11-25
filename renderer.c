@@ -10,7 +10,9 @@
 #include "constants.h"
 #include "utils.h"
 #include "core/core.h"
+
 #include "images/load-images.h"
+#include "images/animation.h"
 
 #include "entities/player/player.h"
 #include "entities/enemy/enemy.h"
@@ -150,7 +152,7 @@ void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
     y_begin + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING,
     HEALTH_BAR_RX, HEALTH_BAR_RY, color);
 
-  // Make the bar color darker
+  // Make half of the bar with a darker color
   color.r /= 1.3;
   color.g /= 1.3;
   color.b /= 1.3;
@@ -213,8 +215,11 @@ float RenderImage(Image_Id img_id, float x, float y, float width) {
 void Render(Renderer* renderer, ALLEGRO_TIMER* timer, Game* game) {
   al_set_target_bitmap(renderer->display_buffer);
 
+
   RenderBackground(renderer, game);
   RenderPhase(renderer, game);
+
+  RenderAnimations();
 
   if (game->turn == Player_Turn) {
     RenderBuyDeck(renderer, game);
@@ -243,4 +248,6 @@ void ClearRenderer(Renderer* renderer) {
   for (int i = 0; i < fonts_size; i++) {
     al_destroy_font(fonts_loaded[i].ptr);
   }
+
+  FreeAnimations();
 }

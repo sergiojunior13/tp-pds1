@@ -10,6 +10,7 @@ game:
 		entities/card/card.c \
 		core/core.c \
 		images/load-images.c \
+		images/animation.c \
 		-lm -g\
 		-I. \
 		`pkg-config allegro-5 allegro_main-5 \

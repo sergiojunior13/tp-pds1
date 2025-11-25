@@ -1,8 +1,10 @@
-#include "renderer.h"
 #include "core.h"
+#include "renderer.h"
+// #include "images/animation.h"
 #include "entities/enemy/enemy.h"
 #include "entities/card/card.h"
 #include "constants.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -130,6 +132,7 @@ void useCard(Game* game) {
         case Card_Type_Defense:
             game->player.shield_pts += focused_card.effect;
             used_card = 1;
+            StartPlayerDefenseAnimation();
             break;
         case Card_Type_Special:
             if (focused_card.effect_type == Special_Card_Heal_Hp) {
@@ -143,6 +146,7 @@ void useCard(Game* game) {
                     game->enemies[i].hp.crr /= 2;
 
             used_card = 1;
+            StartPlayerSpecialAnimation();
             break;
         }
     }
@@ -167,6 +171,7 @@ void useCard(Game* game) {
         used_card = 1;
 
         DealDamage(&selected_enemy->hp, &selected_enemy->shield_pts, selected_card.effect);
+        StartPlayerAttackAnimation();
 
         game->selected_card_index = -1; // Unselect the card
     }
