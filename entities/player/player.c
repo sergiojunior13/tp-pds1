@@ -8,13 +8,13 @@
 #include <allegro5/allegro_primitives.h>
 
 int started_player_animation = 0;
-animation_id player_idle_animation_id = -1;
 int x, y, size;
 
 void StartPlayerIdleAnimation() {
     started_player_animation = 1;
 
     Animation animation;
+    animation.id = Player_Idle_Ani_Id;
 
     animation.fps = 10;
     animation.x = x;
@@ -29,13 +29,14 @@ void StartPlayerIdleAnimation() {
     animation.sprite_sheet.frame_height = 100;
     animation.sprite_sheet.image = GetImage(Player_Idle_Img_Id);
 
-    player_idle_animation_id = StartAnimation(animation);
+    StartAnimation(animation);
 }
 
 void StartPlayerAttackAnimation() {
-    StopAnimation(player_idle_animation_id);
+    StopAnimation(Player_Idle_Ani_Id);
 
     Animation animation;
+    animation.id = Player_Attack_Ani_Id;
 
     animation.fps = 13;
     animation.x = x;
@@ -55,6 +56,7 @@ void StartPlayerAttackAnimation() {
 
 void StartPlayerDefenseAnimation() {
     Animation animation;
+    animation.id = Player_Defense_Ani_Id;
 
     animation.fps = 11;
     animation.x = x;
@@ -73,9 +75,10 @@ void StartPlayerDefenseAnimation() {
 }
 
 void StartPlayerSpecialAnimation() {
-    StopAnimation(player_idle_animation_id);
+    StopAnimation(Player_Idle_Ani_Id);
 
     Animation animation;
+    animation.id = Player_Special_Ani_Id;
 
     animation.fps = 14;
     animation.x = x;

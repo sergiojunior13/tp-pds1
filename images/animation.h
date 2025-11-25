@@ -3,7 +3,13 @@
 
 #include "load-images.h"
 
-typedef int animation_id;
+typedef enum Animation_Id {
+    Player_Attack_Ani_Id,
+    Player_Defense_Ani_Id,
+    Player_Special_Ani_Id,
+    Player_Idle_Ani_Id,
+    Total_Animations // Must be the last
+} Animation_Id;
 
 typedef void(*Callback_Function)();
 
@@ -21,7 +27,7 @@ typedef struct SpriteSheet {
 } SpriteSheet;
 
 typedef struct Animation {
-    animation_id id;
+    Animation_Id id;
 
     SpriteSheet sprite_sheet;
 
@@ -39,10 +45,10 @@ typedef struct Animation {
     Callback_Function OnFinish;
 } Animation;
 
-animation_id StartAnimation(Animation animation);
-void StopAnimation(animation_id animation_id);
+void StartAnimation(Animation animation);
+void StopAnimation(Animation_Id animation_id);
 void RenderAnimations();
 
-void FreeAnimations();
+void StopAnimations();
 
 #endif

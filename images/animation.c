@@ -3,35 +3,9 @@
 #include "animation.h"
 #include "renderer.h"
 
-Animation* loaded_animations;
-int loaded_animations_size = 0;
-int initialized_loaded_animations = 0;
-
-// Animation array
-
-void InitAnimations() {
-    loaded_animations = (Animation*)malloc(sizeof(Animation) * 1);
-
-    initialized_loaded_animations = 1;
-}
-
-void ResizeAnimations(int new_size) {
-    if (initialized_loaded_animations)
-        loaded_animations = (Animation*)realloc(loaded_animations, sizeof(Animation) * new_size);
-}
-
-void FreeAnimations() {
-    if (!initialized_loaded_animations)
-        return;
-
-    for (int i = 0; i < loaded_animations_size; i++)
-        if (loaded_animations[i].is_playing) free(loaded_animations[i].sprite_sheet.frames);
-
-    free(loaded_animations);
-}
+Animation loaded_animations[Total_Animations];
 
 // Frames array
-
 void InitFrames(Animation* animation) {
     animation->sprite_sheet.frames = (Frame*)malloc(sizeof(Frame) * animation->sprite_sheet.frames_size);
 
@@ -43,27 +17,17 @@ void InitFrames(Animation* animation) {
 
 // ----------
 
-animation_id StartAnimation(Animation animation) {
-    loaded_animations_size++;
-
-    if (initialized_loaded_animations)
-        ResizeAnimations(loaded_animations_size);
-    else
-        InitAnimations();
-
-    animation.id = loaded_animations_size - 1;
+void StartAnimation(Animation animation) {
     animation.is_playing = 1;
     animation.crr_frame = 0;
     animation.last_advanced_frame_time_seconds = al_get_time();
 
-    InitFrames(&animation);
+    loaded_animations[animation.id] = animation;
 
-    loaded_animations[loaded_animations_size - 1] = animation;
-
-    return animation.id;
+    InitFrames(&loaded_animations[animation.id]);
 }
 
-void StopAnimation(animation_id id) {
+void StopAnimation(Animation_Id id) {
     if (id == -1)  return;
 
     free(loaded_animations[id].sprite_sheet.frames);
@@ -109,8 +73,16 @@ void RenderAnimation(Animation* animation) {
 }
 
 void RenderAnimations() {
-    for (int i = 0; i < loaded_animations_size; i++) {
+    for (int i = 0; i < Total_Animations; i++) {
         if (loaded_animations[i].is_playing)
             RenderAnimation(&loaded_animations[i]);
     }
 }
+
+void StopAnimations() {
+    for (int i = 0; i < Total_Animations; i++) {
+        if (loaded_animations[i].is_playing)
+            StopAnimation(i);
+    }
+}
+

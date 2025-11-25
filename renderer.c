@@ -249,5 +249,5 @@ void ClearRenderer(Renderer* renderer) {
     al_destroy_font(fonts_loaded[i].ptr);
   }
 
-  FreeAnimations();
+  StopAnimations();
 }
