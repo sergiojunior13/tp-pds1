@@ -3,9 +3,6 @@
 #include "animation.h"
 #include "renderer.h"
 
-Animation loaded_animations[Total_Animations];
-
-// Frames array
 void InitFrames(Animation* animation) {
     animation->sprite_sheet.frames = (Frame*)malloc(sizeof(Frame) * animation->sprite_sheet.frames_size);
 
@@ -14,28 +11,24 @@ void InitFrames(Animation* animation) {
         animation->sprite_sheet.frames[i].y = 0;
     }
 }
+void InitAnimation(Animation* animation) {
+    animation->is_playing = 1;
+    animation->started = 1;
 
-// ----------
+    animation->crr_frame = 0;
+    animation->last_advanced_frame_time_seconds = al_get_time();
 
-void StartAnimation(Animation animation) {
-    animation.is_playing = 1;
-    animation.crr_frame = 0;
-    animation.last_advanced_frame_time_seconds = al_get_time();
-
-    loaded_animations[animation.id] = animation;
-
-    InitFrames(&loaded_animations[animation.id]);
+    InitFrames(animation);
 }
 
-void StopAnimation(Animation_Id id) {
-    if (id == -1)  return;
+void StopAnimation(Animation* animation) {
+    if (animation->is_playing)
+        free(animation->sprite_sheet.frames);
 
-    free(loaded_animations[id].sprite_sheet.frames);
+    animation->is_playing = 0;
 
-    loaded_animations[id].is_playing = 0;
-
-    if (loaded_animations[id].OnFinish != NULL) {
-        loaded_animations[id].OnFinish();
+    if (animation->animation_to_start_after_end != NULL) {
+        InitAnimation(animation->animation_to_start_after_end);
     }
 }
 
@@ -44,8 +37,8 @@ void AdvanceAnimation(Animation* animation) {
 
     if (animation->loop)
         animation->crr_frame = animation->crr_frame % animation->sprite_sheet.frames_size;
-    else if (animation->crr_frame == animation->sprite_sheet.frames_size)
-        StopAnimation(animation->id);
+    else if (animation->crr_frame == animation->sprite_sheet.frames_size) // If not is loop and the ani. ended
+        StopAnimation(animation);
 
     animation->last_advanced_frame_time_seconds += 1.0 / animation->fps;
 }
@@ -56,6 +49,7 @@ void RenderAnimation(Animation* animation) {
         AdvanceAnimation(animation);
 
     if (!animation->is_playing) return;
+
 
     Frame crr_frame = animation->sprite_sheet.frames[animation->crr_frame];
 
@@ -68,21 +62,6 @@ void RenderAnimation(Animation* animation) {
         animation->x,
         animation->y,
         animation->width,
-        animation->height, 0
+        animation->height, animation->invert_horizontally ? ALLEGRO_FLIP_HORIZONTAL : 0
     );
 }
-
-void RenderAnimations() {
-    for (int i = 0; i < Total_Animations; i++) {
-        if (loaded_animations[i].is_playing)
-            RenderAnimation(&loaded_animations[i]);
-    }
-}
-
-void StopAnimations() {
-    for (int i = 0; i < Total_Animations; i++) {
-        if (loaded_animations[i].is_playing)
-            StopAnimation(i);
-    }
-}
-

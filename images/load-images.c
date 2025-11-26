@@ -17,6 +17,14 @@ Image images[] = {
     {Player_Attack_Img_Id, "images/player/player-attack.png"},
     {Player_Defense_Img_Id, "images/player/player-defense.png"},
     {Player_Special_Img_Id, "images/player/player-special.png"},
+    {Weak_Enemy_Idle_Img_Id, "images/enemies/weak_enemy_idle.png"},
+    {Weak_Enemy_Attack_Img_Id, "images/enemies/weak_enemy_attack.png"},
+    {Weak_Enemy_Hurt_Img_Id, "images/enemies/weak_enemy_hurt.png"},
+    {Weak_Enemy_Dead_Img_Id, "images/enemies/weak_enemy_dead.png"},
+    {Strong_Enemy_Idle_Img_Id, "images/enemies/strong_enemy_idle.png"},
+    {Strong_Enemy_Attack_Img_Id, "images/enemies/strong_enemy_attack.png"},
+    {Strong_Enemy_Hurt_Img_Id, "images/enemies/strong_enemy_hurt.png"},
+    {Strong_Enemy_Dead_Img_Id, "images/enemies/strong_enemy_dead.png"},
 };
 
 void LoadImages() {

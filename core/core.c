@@ -1,7 +1,7 @@
 #include "core.h"
 #include "renderer.h"
-// #include "images/animation.h"
 #include "entities/enemy/enemy.h"
+#include "entities/player/player.h"
 #include "entities/card/card.h"
 #include "constants.h"
 
@@ -83,7 +83,6 @@ void InitCombat(Game* game) {
     game->hand_size = 5;
     game->discard_size = 0;
 
-    GenerateDeck(game->deck);
     GenerateBuyDeck(game->buy, game->deck);
     GenerateHand(game->hand, game->buy, &game->buy_size);
 
@@ -98,9 +97,19 @@ void InitCombat(Game* game) {
 Game InitGame() {
     Game game;
 
+    memset(&game.player, 0, sizeof(Player));
+    memset(game.enemies, 0, sizeof(Enemy) * 2);
+    memset(game.hand, 0, sizeof(Card) * 5);
+    memset(game.buy, 0, sizeof(Card) * 20);
+    memset(game.discard, 0, sizeof(Card) * 20);
+    memset(game.deck, 0, sizeof(Card) * 20);
+    memset(game.keyboard_keys, 0, sizeof(unsigned char) * ALLEGRO_KEY_MAX);
+
     game.player.hp = (Hp){ 100, 100 };
 
     game.phase = 1;
+
+    GenerateDeck(game.deck);
 
     InitCombat(&game);
 
@@ -132,7 +141,7 @@ void useCard(Game* game) {
         case Card_Type_Defense:
             game->player.shield_pts += focused_card.effect;
             used_card = 1;
-            StartPlayerDefenseAnimation();
+            StartPlayerDefenseAnimation(&game->player);
             break;
         case Card_Type_Special:
             if (focused_card.effect_type == Special_Card_Heal_Hp) {
@@ -142,11 +151,14 @@ void useCard(Game* game) {
                 else game->player.hp.crr = newHp;
             }
             else
-                for (int i = 0; i < game->enemies_size; i++)// Remove half of enemies life
+                for (int i = 0; i < game->enemies_size; i++) {// Remove half of enemies life
                     game->enemies[i].hp.crr /= 2;
+                    if (game->enemies[i].hp.crr <= 0) StartEnemyDeadAnimation(&game->enemies[i], i);
+                    else StartEnemyHurtAnimation(&game->enemies[i], i);
+                }
 
             used_card = 1;
-            StartPlayerSpecialAnimation();
+            StartPlayerSpecialAnimation(&game->player);
             break;
         }
     }
@@ -171,7 +183,12 @@ void useCard(Game* game) {
         used_card = 1;
 
         DealDamage(&selected_enemy->hp, &selected_enemy->shield_pts, selected_card.effect);
-        StartPlayerAttackAnimation();
+        StartPlayerAttackAnimation(&game->player);
+
+        if (selected_enemy->hp.crr <= 0)
+            StartEnemyDeadAnimation(selected_enemy, game->focused_entity.index);
+        else
+            StartEnemyHurtAnimation(selected_enemy, game->focused_entity.index);
 
         game->selected_card_index = -1; // Unselect the card
     }
@@ -299,9 +316,10 @@ void AdvanceGame(Renderer* renderer, Game* game) {
 
     if (game->turn == Enemy_Turn) {
         for (int i = 0; i < game->enemies_size; i++) {
-            Enemy enemy = game->enemies[i];
+            Enemy* enemy = &game->enemies[i];
 
-            if (enemy.hp.crr <= 0) {
+            if (enemy->hp.crr <= 0) {
+                StartEnemyDeadAnimation(enemy, i);
                 RemoveEnemyFromArray(game->enemies, &game->enemies_size, i);
 
                 i--; // Need to do this because the enemies_size have changed
@@ -309,10 +327,11 @@ void AdvanceGame(Renderer* renderer, Game* game) {
             }
 
             // Execute enemy actions
-            for (int j = 0; j < enemy.actions_size; j++) {
-                EnemyAction action = enemy.actions[j];
+            for (int j = 0; j < enemy->actions_size; j++) {
+                EnemyAction action = enemy->actions[j];
 
                 if (action.type == Attack_Action) {
+                    StartEnemyAttackAnimation(enemy, i);
                     DealDamage(&game->player.hp, &game->player.shield_pts, action.effect);
                 }
                 else {

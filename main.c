@@ -80,5 +80,13 @@ int main() {
   al_destroy_event_queue(queue);
   DestroyImages();
   ClearRenderer(&renderer);
+
+  StopAnimation(&game.player.action_animation);
+  StopAnimation(&game.player.idle_animation);
+
+  for (int i = 0; i < game.enemies_size; i++) {
+    StopAnimation(&game.enemies[i].action_animation);
+    StopAnimation(&game.enemies[i].idle_animation);
+  }
   return 0;
 }

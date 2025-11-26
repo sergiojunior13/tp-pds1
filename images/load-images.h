@@ -18,6 +18,14 @@ typedef enum Image_Id {
     Player_Attack_Img_Id,
     Player_Defense_Img_Id,
     Player_Special_Img_Id,
+    Weak_Enemy_Idle_Img_Id,
+    Weak_Enemy_Attack_Img_Id,
+    Weak_Enemy_Hurt_Img_Id,
+    Weak_Enemy_Dead_Img_Id,
+    Strong_Enemy_Idle_Img_Id,
+    Strong_Enemy_Attack_Img_Id,
+    Strong_Enemy_Hurt_Img_Id,
+    Strong_Enemy_Dead_Img_Id,
     Total_Images // Need's to be the last
 } Image_Id;
 

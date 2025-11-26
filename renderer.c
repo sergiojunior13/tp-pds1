@@ -12,7 +12,6 @@
 #include "core/core.h"
 
 #include "images/load-images.h"
-#include "images/animation.h"
 
 #include "entities/player/player.h"
 #include "entities/enemy/enemy.h"
@@ -219,8 +218,6 @@ void Render(Renderer* renderer, ALLEGRO_TIMER* timer, Game* game) {
   RenderBackground(renderer, game);
   RenderPhase(renderer, game);
 
-  RenderAnimations();
-
   if (game->turn == Player_Turn) {
     RenderBuyDeck(renderer, game);
     RenderDiscardDeck(renderer, game);
@@ -248,6 +245,4 @@ void ClearRenderer(Renderer* renderer) {
   for (int i = 0; i < fonts_size; i++) {
     al_destroy_font(fonts_loaded[i].ptr);
   }
-
-  StopAnimations();
 }

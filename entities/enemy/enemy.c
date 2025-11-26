@@ -3,11 +3,86 @@
 #include "utils.h"
 #include "enemy.h"
 #include "images/load-images.h"
+#include "images/animation.h"
 #include "core/core.h"
 
 #include <stdio.h>
 
 #include <allegro5/allegro_primitives.h>
+
+#define ENEMY_ANI_SIZE ENEMY_SIZE + 200
+
+void InitEnemyIdleAnimation(Enemy* enemy, int enemy_index) {
+    enemy->idle_animation.fps = 10;
+    enemy->idle_animation.width = ENEMY_ANI_SIZE;
+    enemy->idle_animation.height = ENEMY_ANI_SIZE;
+    enemy->idle_animation.loop = 1;
+    enemy->idle_animation.animation_to_start_after_end = NULL;
+
+    enemy->idle_animation.sprite_sheet.frames_size = 8;
+    enemy->idle_animation.sprite_sheet.frame_width = 128;
+    enemy->idle_animation.sprite_sheet.frame_height = 128;
+    enemy->idle_animation.sprite_sheet.image =
+        GetImage(enemy->type == Enemy_Strong ? Strong_Enemy_Idle_Img_Id : Weak_Enemy_Idle_Img_Id);
+
+    InitAnimation(&enemy->idle_animation);
+}
+
+void StartEnemyDeadAnimation(Enemy* enemy, int enemy_index) {
+    StopAnimation(&enemy->idle_animation);
+
+    enemy->action_animation.fps = 4;
+    enemy->action_animation.width = ENEMY_ANI_SIZE;
+    enemy->action_animation.height = ENEMY_ANI_SIZE;
+    enemy->action_animation.loop = 0;
+    enemy->action_animation.animation_to_start_after_end = NULL;
+
+    enemy->action_animation.sprite_sheet.frames_size = 3;
+    enemy->action_animation.sprite_sheet.frame_width = 128;
+    enemy->action_animation.sprite_sheet.frame_height = 128;
+    enemy->action_animation.sprite_sheet.image =
+        GetImage(enemy->type == Enemy_Strong ? Strong_Enemy_Dead_Img_Id : Weak_Enemy_Dead_Img_Id);
+
+    InitAnimation(&enemy->action_animation);
+}
+
+void StartEnemyAttackAnimation(Enemy* enemy, int enemy_index) {
+    StopAnimation(&enemy->idle_animation);
+
+    enemy->action_animation.fps = 6;
+    enemy->action_animation.width = ENEMY_ANI_SIZE;
+    enemy->action_animation.height = ENEMY_ANI_SIZE;
+    enemy->action_animation.invert_horizontally = 1;
+    enemy->action_animation.loop = 0;
+    enemy->action_animation.animation_to_start_after_end = &enemy->idle_animation;
+
+    enemy->action_animation.sprite_sheet.frames_size = enemy->type == Enemy_Strong ? 5 : 4;
+    enemy->action_animation.sprite_sheet.frame_width = 128;
+    enemy->action_animation.sprite_sheet.frame_height = 128;
+    enemy->action_animation.sprite_sheet.image =
+        GetImage(enemy->type == Enemy_Strong ? Strong_Enemy_Attack_Img_Id : Weak_Enemy_Attack_Img_Id);
+
+    InitAnimation(&enemy->action_animation);
+}
+
+void StartEnemyHurtAnimation(Enemy* enemy, int enemy_index) {
+    StopAnimation(&enemy->idle_animation);
+
+    enemy->action_animation.fps = 8;
+    enemy->action_animation.width = ENEMY_ANI_SIZE;
+    enemy->action_animation.height = ENEMY_ANI_SIZE;
+    enemy->action_animation.invert_horizontally = 1;
+    enemy->action_animation.loop = 0;
+    enemy->action_animation.animation_to_start_after_end = &enemy->idle_animation;
+
+    enemy->action_animation.sprite_sheet.frames_size = 6;
+    enemy->action_animation.sprite_sheet.frame_width = 128;
+    enemy->action_animation.sprite_sheet.frame_height = 128;
+    enemy->action_animation.sprite_sheet.image =
+        GetImage(enemy->type == Enemy_Strong ? Strong_Enemy_Hurt_Img_Id : Weak_Enemy_Hurt_Img_Id);
+
+    InitAnimation(&enemy->action_animation);
+}
 
 void RemoveEnemyFromArray(Enemy array[], int* size_ptr, int element_index) {
     if ((*size_ptr) == 1) {
@@ -24,30 +99,37 @@ void RemoveEnemyFromArray(Enemy array[], int* size_ptr, int element_index) {
 }
 
 void RenderEnemies(const Renderer* renderer, Game* game) {
-    int begin_x = renderer->display_width - CREATURE_DISTANCE_TO_WINDOW_CORNER - ENEMY_RADIUS;
+    int begin_x = renderer->display_width - CREATURE_DISTANCE_TO_WINDOW_CORNER - ENEMY_SIZE;
 
     int is_some_enemy_focused = game->focused_entity.type == Enemy_Entity;
     int focused_enemy_index = is_some_enemy_focused ? game->focused_entity.index : -1;
 
     for (int i = 0; i < game->enemies_size; i++) {
-        RenderEnemy(renderer, &game->enemies[i], begin_x - 140 * (1 - i), ENEMY_BEGIN_Y, focused_enemy_index == i);
+
+        RenderEnemy(renderer, &game->enemies[i], begin_x - (ENEMY_SIZE + 40) * (1 - i), ENEMY_BEGIN_Y + i * 100, focused_enemy_index == i, i);
     }
 }
 
-void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int begin_y, int is_focused) {
-    // if (enemy->hp.crr == 0) return;
-
+void RenderEnemy(const Renderer* renderer, Enemy* enemy, int begin_x, int begin_y, int is_focused, int index) {
     if (is_focused) begin_y -= 40;
 
-    int width = ENEMY_RADIUS;
+    enemy->idle_animation.x = begin_x - (ENEMY_ANI_SIZE - ENEMY_SIZE) / 2.0;
+    enemy->idle_animation.y = begin_y - (ENEMY_ANI_SIZE - ENEMY_SIZE);
+    enemy->action_animation.x = begin_x - (ENEMY_ANI_SIZE - ENEMY_SIZE) / 2.0;
+    enemy->action_animation.y = begin_y - (ENEMY_ANI_SIZE - ENEMY_SIZE);
+
+    if (enemy->idle_animation.started != 1)
+        InitEnemyIdleAnimation(enemy, index);
+
+    RenderAnimation(&enemy->action_animation);
+    RenderAnimation(&enemy->idle_animation);
+
+    int width = ENEMY_SIZE;
     float center_x = begin_x + width / 2.0;
     float center_y = begin_y + width / 2.0;
 
-    ALLEGRO_COLOR enemy_color = enemy->type == Enemy_Strong ? al_map_rgb(211, 175, 55) : al_map_rgb(255, 0, 0);
     ALLEGRO_COLOR health_bar_color = enemy->type == Enemy_Strong ? al_map_rgb(211, 175, 55) : al_map_rgb(0, 255, 0);
 
-    al_draw_filled_circle(center_x, center_y, width / 2.0,
-        enemy_color);
     float x_end = begin_x + width;
 
     float health_bar_begin_y = begin_y + width + 10;
@@ -79,7 +161,7 @@ void RenderEnemy(const Renderer* renderer, const Enemy* enemy, int begin_x, int 
 
         float img_x = center_x - ((img_size * enemy->actions_size + (enemy->actions_size - 1) * img_gap) / 2.0)
             + img_size * i + img_gap * i;
-        float img_y = begin_y - 10 - img_size;
+        float img_y = begin_y + 35 - img_size;
         RenderImage(img_id, img_x, img_y, img_size);
 
         char effect_text[4];

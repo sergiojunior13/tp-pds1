@@ -39,7 +39,7 @@ typedef struct Game {
 
     Entity focused_entity;
 
-    unsigned char keyboard_keys[227];
+    unsigned char keyboard_keys[ALLEGRO_KEY_MAX];
 } Game;
 
 void AdvanceGame(Renderer* renderer, Game* game);
