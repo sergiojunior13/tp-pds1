@@ -28,7 +28,7 @@ void DealDamage(Hp* entity_hp, int* entity_shield_pts, int damage) {
 
 void GenerateDeck(Card game_deck[]) {
     // Attack cards
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++) { // 10 attack cards
         Card card;
         if (i == 0) card = GenerateCard(Card_Type_Attack, 0); // At least 1 card of cost 0
         else if (i == 1) card = GenerateCard(Card_Type_Attack, 2); // At least 1 card of cost 2
@@ -40,19 +40,19 @@ void GenerateDeck(Card game_deck[]) {
     }
 
     // Defense cards
-    for (int i = 10; i < 18; i++) {
+    for (int i = 10; i < 18; i++) { // 8 defense cards
         Card card;
         if (i == 10) card = GenerateCard(Card_Type_Defense, 0); // At least 1 card of cost 0
         else if (i == 11) card = GenerateCard(Card_Type_Defense, 2); // At least 1 card of cost 2
-        else if (i == 12) card = GenerateCard(Card_Type_Defense, 3); // At least 1 card of cost 3
+        else if (i == 12) card = GenerateCard(Card_Type_Defense, 3); // Exactly 1 card of cost 3
         else if (i <= 15) card = GenerateCard(Card_Type_Defense, 1); // At least 3 cards of cost 1
-        else card = GenerateCard(Card_Type_Defense, GenRandomNum(0, 3)); // Gen the last 4 def cards randomly
+        else card = GenerateCard(Card_Type_Defense, GenRandomNum(0, 2)); // Gen the last 4 def cards randomly (expect for cost 3)
 
         game_deck[i] = card;
     }
 
     // Special cards
-    for (int i = 18; i < 20; i++) {
+    for (int i = 18; i < 20; i++) { // 2 special cards
         game_deck[i] = GenerateCard(Card_Type_Special, 0);
     }
 }
@@ -274,9 +274,9 @@ void CheckKeys(Game* game) {
     CheckArrowsKeys(game);
 
     // Debug instant damage
-    if (game->keyboard_keys[ALLEGRO_KEY_X] & GAME_KEY_DOWN) {
-        if (game->player.hp.crr > 1) game->player.hp.crr = 1;
-    }
+
+    if (game->keyboard_keys[ALLEGRO_KEY_X] & GAME_KEY_DOWN)
+        game->player.hp.crr = 1;
 
     if (game->keyboard_keys[ALLEGRO_KEY_SPACE] & GAME_KEY_DOWN) {
         for (int i = 0; i < game->enemies_size; i++) {
@@ -307,10 +307,16 @@ void CheckKeys(Game* game) {
 void AdvanceGame(Renderer* renderer, Game* game) {
     CheckKeys(game);
 
+    if (game->phase > 10) {
+        SetMessage("VOCÊ GANHOU!!\nPressione Q para sair do jogo.", 5);
+        return;
+    }
+
     if (game->player.hp.crr <= 0) {
         game->phase = 1;
         game->player.hp.crr = 100;
         InitCombat(game);
+        SetMessage("GAME OVER\n\nVocê começou tudo novamente :(", 4);
         return;
     }
 
@@ -334,9 +340,9 @@ void AdvanceGame(Renderer* renderer, Game* game) {
                     StartEnemyAttackAnimation(enemy, i);
                     DealDamage(&game->player.hp, &game->player.shield_pts, action.effect);
                 }
-                else {
+                else
                     game->enemies[i].shield_pts += action.effect;
-                }
+
             }
         }
 
@@ -345,6 +351,8 @@ void AdvanceGame(Renderer* renderer, Game* game) {
             InitCombat(game);
             return;
         }
+
+        // Start player turn
         game->turn = Player_Turn;
 
         if (game->buy_size < 5) {

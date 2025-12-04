@@ -180,7 +180,10 @@ void GenerateEnemyActions(Enemy* enemy) {
     int already_has_action_of_lvl1 = 0;
 
     for (int i = 0; i < enemy->actions_size; i++) {
-        enemy->actions[i].type = i == 0 ? Attack_Action : (Attack_Action, Defense_Action);
+        if (i == 0) // At least 1 attack action
+            enemy->actions[i].type = Attack_Action;
+        else
+            enemy->actions[i].type = GenRandomNum(Attack_Action, Defense_Action);
 
         if (enemy->type == Enemy_Strong) {
             enemy->actions[i].level = GenRandomNum(already_has_action_of_lvl1 ? 2 : 1, 3);
@@ -212,9 +215,12 @@ void GenerateEnemies(Enemy gameEnemies[2]) {
 
     for (int i = 0; i < 2; i++) {
         // Enemy type
-        if (!already_gen_strong_enemy) { // Chance of getting '1' is 5%, the chance of appear a strong enemy
+        if (!already_gen_strong_enemy) {
+            // Chance of getting '1' of 20 is 5%, the chance to appear a strong enemy
             gameEnemies[i].type = GenRandomNum(1, 20) == 1 ? Enemy_Strong : Enemy_Weak;
-            already_gen_strong_enemy = 1;
+
+            if (gameEnemies[i].type == Enemy_Strong)
+                already_gen_strong_enemy = 1;
         }
         else gameEnemies[i].type = Enemy_Weak;
 

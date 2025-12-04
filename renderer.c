@@ -135,6 +135,7 @@ void RenderDiscardDeck(Renderer* renderer, Game* game) {
 
 void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
   ALLEGRO_COLOR color) {
+  // Draw white border
   al_draw_filled_rounded_rectangle(
     x_begin - HEALTH_BAR_PADDING,
     y_begin,
@@ -142,8 +143,8 @@ void RenderHealthBar(const Hp* hp, float x_begin, float x_end, float y_begin,
     y_begin + HEALTH_BAR_HEIGHT + HEALTH_BAR_PADDING * 2,
     HEALTH_BAR_RX + HEALTH_BAR_PADDING, HEALTH_BAR_RY + HEALTH_BAR_PADDING, al_map_rgb(255, 255, 255));
 
+  // Draw bar
   float health_bar_width_life_percentage = x_begin + (x_end - x_begin) * ((float)hp->crr) / hp->max;
-
   al_draw_filled_rounded_rectangle(
     x_begin,
     y_begin + HEALTH_BAR_PADDING,
@@ -211,7 +212,7 @@ float RenderImage(Image_Id img_id, float x, float y, float width) {
   return scale;
 }
 
-void Render(Renderer* renderer, ALLEGRO_TIMER* timer, Game* game) {
+void Render(Renderer* renderer, Game* game) {
   al_set_target_bitmap(renderer->display_buffer);
 
 

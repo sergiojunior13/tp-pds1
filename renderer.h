@@ -29,7 +29,7 @@ typedef struct Renderer {
 
 void FillRenderer(Renderer* renderer);
 
-void Render(Renderer* renderer, ALLEGRO_TIMER* timer, Game* game);
+void Render(Renderer* renderer, Game* game);
 
 void ClearRenderer(Renderer* renderer);
 

@@ -44,9 +44,10 @@ int main() {
   ClearKeyboardKeys(game.keyboard_keys);
 
   al_start_timer(timer);
+
+  int done = 0, end = 0, redraw = 0;
   while (1) {
     al_wait_for_event(queue, &event);
-    int done = 0, print_combat = 0, redraw = 0;
 
     switch (event.type) {
     case ALLEGRO_EVENT_TIMER:
@@ -66,16 +67,21 @@ int main() {
       break;
     }
 
+    if (redraw && !end) {
+      if (game.phase > 10)
+        end = 1;
+
+      AdvanceGame(&renderer, &game);
+      Render(&renderer, &game);
+      redraw = 0;
+
+    }
+
     if (done) {
       break;
     }
-    // You want to put your combat logic here.
-    if (redraw) {
-      AdvanceGame(&renderer, &game);
-      Render(&renderer, timer, &game);
-      redraw = 0;
-    }
   }
+
   al_destroy_timer(timer);
   al_destroy_event_queue(queue);
   DestroyImages();
