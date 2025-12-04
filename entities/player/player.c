@@ -46,6 +46,11 @@ void StartPlayerAttackAnimation(Player* player) {
 }
 
 void StartPlayerDefenseAnimation(Player* player) {
+    /* This fix a bug where if start this animation while attack/special
+    animation is still running, the player disappear */
+    if (player->idle_animation.is_playing == 0)
+        InitAnimation(&player->idle_animation);
+
     player->action_animation.fps = 9;
     player->action_animation.x = x;
     player->action_animation.y = y - PLAYER_SIZE * 80.0 / 100.0;

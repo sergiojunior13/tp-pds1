@@ -75,9 +75,16 @@ void GenerateHand(Card game_hand[], Card buy_deck[], int* buy_deck_size_ptr) {
 void InitCombat(Game* game) {
     game->player.energy = 3;
     game->player.shield_pts = 0;
+    if (game->phase == 11) { // Boss fight
+        game->player.hp.crr = 100; // Give some life to player fight with the boss
 
-    GenerateEnemies(game->enemies);
-    game->enemies_size = 2;
+        GenerateBoss(game->enemies);
+        game->enemies_size = 1;
+    }
+    else {
+        GenerateEnemies(game->enemies);
+        game->enemies_size = 2;
+    }
 
     game->buy_size = 20;
     game->hand_size = 5;
@@ -128,7 +135,6 @@ void useCard(Game* game) {
         card = focused_card;
         card_index = game->focused_entity.index;
 
-
         if (focused_card.cost > game->player.energy) {
             SetMessage("Não possui energia suficiente!", 1.5);
             return;
@@ -140,6 +146,7 @@ void useCard(Game* game) {
             break;
         case Card_Type_Defense:
             game->player.shield_pts += focused_card.effect;
+
             used_card = 1;
             StartPlayerDefenseAnimation(&game->player);
             break;
@@ -150,12 +157,13 @@ void useCard(Game* game) {
                     game->player.hp.crr = 100;
                 else game->player.hp.crr = newHp;
             }
-            else
+            else {
                 for (int i = 0; i < game->enemies_size; i++) {// Remove half of enemies life
                     game->enemies[i].hp.crr /= 2;
                     if (game->enemies[i].hp.crr <= 0) StartEnemyDeadAnimation(&game->enemies[i], i);
                     else StartEnemyHurtAnimation(&game->enemies[i], i);
                 }
+            }
 
             used_card = 1;
             StartPlayerSpecialAnimation(&game->player);
@@ -183,6 +191,7 @@ void useCard(Game* game) {
         used_card = 1;
 
         DealDamage(&selected_enemy->hp, &selected_enemy->shield_pts, selected_card.effect);
+
         StartPlayerAttackAnimation(&game->player);
 
         if (selected_enemy->hp.crr <= 0)
@@ -199,8 +208,30 @@ void useCard(Game* game) {
         RemoveCardFromArray(game->hand, &game->hand_size, card_index);
         AddCardToArray(game->discard, &game->discard_size, card);
 
-        if (card.type == Card_Type_Special)
+        if (card.type == Card_Type_Special) {
             DiscardHand(game);
+
+            // Replace hand by buy deck
+            int buy_size = game->buy_size;
+            for (int i = 0; i < 5; i++) {
+                if (i == buy_size) break;
+
+                AddCardToArray(game->hand, &game->hand_size, game->buy[i]);
+                RemoveCardFromArray(game->buy, &game->buy_size, i);
+            }
+
+            if (buy_size == 0) {
+                GenerateBuyDeck(game->buy, game->discard);
+                game->buy_size = 20;
+                game->discard_size = 0;
+
+                for (int i = 0; i < 5; i++) {
+                    AddCardToArray(game->hand, &game->hand_size, game->buy[i]);
+                    RemoveCardFromArray(game->buy, &game->buy_size, i);
+                }
+            }
+
+        }
     }
 }
 
@@ -307,7 +338,7 @@ void CheckKeys(Game* game) {
 void AdvanceGame(Renderer* renderer, Game* game) {
     CheckKeys(game);
 
-    if (game->phase > 10) {
+    if (game->phase > 11) {
         SetMessage("VOCÊ GANHOU!!\nPressione Q para sair do jogo.", 5);
         return;
     }

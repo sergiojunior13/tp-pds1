@@ -68,7 +68,7 @@ int main() {
     }
 
     if (redraw && !end) {
-      if (game.phase > 10)
+      if (game.phase > 11)
         end = 1;
 
       AdvanceGame(&renderer, &game);
